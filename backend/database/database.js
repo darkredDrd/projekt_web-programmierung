@@ -47,6 +47,7 @@ const createTableStatement = `
         author TEXT NOT NULL, -- to identify the author of the comment
         content TEXT NOT NULL, -- to specify the content of the comment
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
     );
 `;
