@@ -38,6 +38,7 @@ const createTableStatement = `
         file_url TEXT NOT NULL, -- to access the document
         uploaded_by TEXT NOT NULL, -- to know who uploaded the document
         uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
     );
     
@@ -56,8 +57,13 @@ const createTableStatement = `
 const db = new Database(filePath);
 
 // Execute the create table statement
-db.exec(createTableStatement);
+db.exec(createTableStatements);
 
 export default fp(async (fastify, opts) => {
     fastify.decorate('db', db);
+
+    fastify.addHook('onClose', (fastifyInstance, done) => {
+        db.close();
+        done();
+    });
 });

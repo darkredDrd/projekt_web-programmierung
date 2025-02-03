@@ -65,7 +65,7 @@ export function createDocument(fastify, documentProps) {
     }
 }
 
-export function updateDocument(id, documentProps) {
+export function updateDocument(fastify, id, documentProps) {
     // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];

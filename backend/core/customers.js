@@ -66,7 +66,7 @@ export function createCustomer(fastify, customerProps) {
     }
 }
 
-export function updateCustomer(id, customerProps) {
+export function updateCustomer(fastify, id, customerProps) {
     // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
