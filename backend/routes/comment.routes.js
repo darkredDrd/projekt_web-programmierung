@@ -89,7 +89,7 @@ async function commentRoutes(fastify, options) {
         }
 
         reply.code(200);
-        return { comment: comment };
+        return { message: `Comment with ID ${id} successfully deleted` };
     });
 };
 

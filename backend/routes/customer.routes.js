@@ -89,7 +89,7 @@ async function customerRoutes(fastify, options) {
         }
 
         reply.code(200);
-        return { customer: customer };
+        return { message: `Customer with ID ${id} successfully deleted` };
     });
   };
 

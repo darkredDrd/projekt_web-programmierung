@@ -89,7 +89,7 @@ async function documentRoutes(fastify, options) {
         }
 
         reply.code(200);
-        return { document: document };
+        return { message: `Document with ID ${id} successfully deleted` };
     });
 };
 

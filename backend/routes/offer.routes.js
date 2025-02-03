@@ -89,7 +89,7 @@ async function offerRoutes(fastify, options) {
         }
 
         reply.code(200);
-        return { offer: deletedOffer };
+        return { message: `Offer with ID ${id} successfully deleted` };
     });
 };
 

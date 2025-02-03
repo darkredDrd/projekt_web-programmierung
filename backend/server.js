@@ -30,10 +30,10 @@ fastify.register(cors, {
 });
 
 fastify.register(dbConnector);
-fastify.register(customerRoutes, { prefix: "/database" });
-fastify.register(commentRoutes, { prefix: "/database" });
-fastify.register(documentRoutes, { prefix: "/database" });
-fastify.register(offerRoutes, { prefix: "/database" });
+fastify.register(customerRoutes, { prefix: "/db" });
+fastify.register(commentRoutes, { prefix: "/db" });
+fastify.register(documentRoutes, { prefix: "/db" });
+fastify.register(offerRoutes, { prefix: "/db" });
 
 try {
     await fastify.listen({ port: 8080 });
