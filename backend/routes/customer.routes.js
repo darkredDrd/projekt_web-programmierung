@@ -23,7 +23,7 @@ import {
  * - PUT (update) a customer by ID
  * - DELETE a customer by ID
  */
-async function customersRoutes(fastify, options) {
+async function customerRoutes(fastify, options) {
     fastify.get("/customers", getCustomersOptions, async (request, reply) => {
         const customers = getCustomers(fastify);
 
@@ -93,4 +93,4 @@ async function customersRoutes(fastify, options) {
     });
   };
 
-  export { customersRoutes };
+  export { customerRoutes };

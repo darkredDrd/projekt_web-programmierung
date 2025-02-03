@@ -23,7 +23,7 @@ import {
  * - PUT (update) an offer by ID
  * - DELETE an offer by ID
  */
-async function offersRoutes(fastify, options) {
+async function offerRoutes(fastify, options) {
     fastify.get("/offers", getOffersOptions, async (request, reply) => {
         const offers = getOffers(fastify);
 
@@ -93,4 +93,4 @@ async function offersRoutes(fastify, options) {
     });
 };
 
-export { offersRoutes };
+export { offerRoutes };

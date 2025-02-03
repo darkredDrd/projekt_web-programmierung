@@ -1,5 +1,5 @@
 import {
-    getComment,
+    getComments,
     getCommentById,
     createComment,
     updateComment,
@@ -23,7 +23,7 @@ import {
  * - PUT (update) a comment by ID
  * - DELETE a comment by ID
  */
-async function commentsRoutes(fastify, options) {
+async function commentRoutes(fastify, options) {
     fastify.get("/comments", getCommentsOptions, async (request, reply) => {
         const comments = getComments(fastify);
 
@@ -93,4 +93,4 @@ async function commentsRoutes(fastify, options) {
     });
 };
 
-export { commentsRoutes };
+export { commentRoutes };

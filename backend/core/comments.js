@@ -1,4 +1,4 @@
-export function getComents(fastify) {
+export function getComments(fastify) {
     const statement = fastify.db.prepare("SELECT * FROM comments");
 
     try {

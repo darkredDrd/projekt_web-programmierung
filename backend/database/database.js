@@ -7,7 +7,7 @@ const filePath = "./database/database.db";
 
 // Defines SQL statement to create tables - note that we don't use VARCHAR as SQLite automatically converts it to TEXT //
 // We use cascading deletes to ensure that child-data is deleted when parent-data is deleted //
-const createTableStatement = `
+const createTableStatements = `
     CREATE TABLE IF NOT EXISTS customers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL, -- to identify the customer

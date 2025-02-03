@@ -1,5 +1,3 @@
-import { createOffer } from "../core/offers";
-
 const offerSchema = {
     $id: "offerSchema",
     type: "object",

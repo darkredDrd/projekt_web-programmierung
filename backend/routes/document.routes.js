@@ -23,7 +23,7 @@ import {
  * - PUT (update) a document by ID
  * - DELETE a document by ID
  */
-async function documentsRoutes(fastify, options) {
+async function documentRoutes(fastify, options) {
     fastify.get("/documents", getDocumentsOptions, async (request, reply) => {
         const documents = getDocuments(fastify);
 
@@ -93,4 +93,4 @@ async function documentsRoutes(fastify, options) {
     });
 };
 
-export { documentsRoutes };
+export { documentRoutes };
