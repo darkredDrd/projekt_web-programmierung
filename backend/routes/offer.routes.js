@@ -34,7 +34,8 @@ async function offerRoutes(fastify, options) {
             return;
         }
 
-        const offers = getOffers(fastify);
+        const { title, customer_id, status } = request.query;
+        const offers = getOffers(fastify, { title, customer_id, status });
 
         if (!offers) {
             reply.code(500);

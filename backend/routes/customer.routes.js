@@ -31,7 +31,8 @@ async function customerRoutes(fastify, options) {
             return;
         }
 
-        const customers = getCustomers(fastify);
+        const { name, email } = request.query;
+        const customers = getCustomers(fastify, { name, email });
 
         if (!customers) {
             reply.code(500);
@@ -79,8 +80,7 @@ async function customerRoutes(fastify, options) {
             reply.code(201);
             return { customer: customer };
         } catch (err) {
-            reply.code(400);
-            return { error: err.message };
+            reply.code(400).send({ error: err.message });
         }
     });
 
@@ -97,15 +97,12 @@ async function customerRoutes(fastify, options) {
             const customer = await updateCustomer(fastify, id, customerProps);
 
             if (!customer) {
-                reply.code(500);
-                return { error: `Could not update customer with ID ${id}` };
+                reply.code(400).send({ error: `Customer with ID ${id} not found` });
+            } else {
+                reply.code(200).send({ customer: customer });
             }
-
-            reply.code(200);
-            return { customer: customer };
         } catch (err) {
-            reply.code(400);
-            return { error: err.message };
+            reply.code(400).send({ error: err.message });
         }
     });
 
@@ -120,12 +117,10 @@ async function customerRoutes(fastify, options) {
         const customer = deleteCustomer(fastify, id);
 
         if (!customer) {
-            reply.code(400);
-            return { error: `Customer with ID ${id} not found` };
+            reply.code(400).send({ error: `Customer with ID ${id} not found` });
+        } else {
+            reply.code(200).send({ message: `Customer with ID ${id} successfully deleted` });
         }
-
-        reply.code(200);
-        return { message: `Customer with ID ${id} successfully deleted` };
     });
 }
 

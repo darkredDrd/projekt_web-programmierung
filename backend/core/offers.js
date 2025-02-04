@@ -1,8 +1,26 @@
-export function getOffers(fastify) {
-    const statement = fastify.db.prepare("SELECT * FROM offers");
+export function getOffers(fastify, filters = {}) {
+    let query = "SELECT * FROM offers WHERE 1=1";
+    const params = [];
+
+    if (filters.title) {
+        query += " AND title LIKE ?";
+        params.push(`%${filters.title}%`);
+    }
+
+    if (filters.customer_id) {
+        query += " AND customer_id = ?";
+        params.push(filters.customer_id);
+    }
+
+    if (filters.status) {
+        query += " AND status = ?";
+        params.push(filters.status);
+    }
+
+    const statement = fastify.db.prepare(query);
 
     try {
-        const offers = statement.all();
+        const offers = statement.all(...params);
         return offers;
     } catch (err) {
         fastify.log.error(err);

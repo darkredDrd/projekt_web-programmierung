@@ -1,8 +1,21 @@
-export function getCustomers(fastify) {
-    const statement = fastify.db.prepare("SELECT * FROM customers");
+export function getCustomers(fastify, filters = {}) {
+    let query = "SELECT * FROM customers WHERE 1=1";
+    const params = [];
+
+    if (filters.name) {
+        query += " AND name LIKE ?";
+        params.push(`%${filters.name}%`);
+    }
+
+    if (filters.email) {
+        query += " AND email LIKE ?";
+        params.push(`%${filters.email}%`);
+    }
+
+    const statement = fastify.db.prepare(query);
 
     try {
-        const customers = statement.all();
+        const customers = statement.all(...params);
         return customers;
     } catch (err) {
         fastify.log.error(err);

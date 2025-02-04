@@ -34,7 +34,8 @@ async function commentRoutes(fastify, options) {
             return;
         }
 
-        const comments = getComments(fastify);
+        const { author, content } = request.query;
+        const comments = getComments(fastify, { author, content });
 
         if (!comments) {
             reply.code(500);

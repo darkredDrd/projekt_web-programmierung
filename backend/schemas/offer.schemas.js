@@ -8,7 +8,7 @@ const offerSchema = {
         description: { type: "string" },
         price: { type: "number" },
         currency: { type: "string", enum: ["EUR", "USD", "GBP"] },
-        status: { type: "string" },
+        status: { type: "string", enum: ["draft", "in_progress", "active", "on_ice"] },
         created_by: { type: "string" },
         created_at: { type: "string" },
         updated_at: { type: "string" },
@@ -17,6 +17,14 @@ const offerSchema = {
 
 const getOffersOptions = {
     schema: {
+        querystring: {
+            type: "object",
+            properties: {
+                title: { type: "string" },
+                customer_id: { type: "integer" },
+                status: { type: "string", enum: ["draft", "in_progress", "active", "on_ice"] }
+            }
+        },
         response: {
             200: {
                 type: "array",

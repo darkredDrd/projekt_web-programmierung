@@ -14,6 +14,13 @@ const customerSchema = {
 
 const getCustomersOptions = {
     schema: {
+        querystring: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                email: { type: "string" }
+            }
+        },
         response: {
             200: {
                 type: "array",
@@ -56,7 +63,7 @@ const createCustomerOptions = {
             required: ["name", "email", "phone", "address"],
         },
         response: {
-            200: {
+            201: {
                 type: "object",
                 properties: {
                     customer: { $ref: "customerSchema#" },
@@ -121,5 +128,5 @@ export {
     getCustomerOptions,
     createCustomerOptions,
     updateCustomerOptions,
-    deleteCustomerOptions,
+    deleteCustomerOptions
 };

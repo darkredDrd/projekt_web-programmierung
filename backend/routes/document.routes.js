@@ -43,7 +43,8 @@ async function documentRoutes(fastify, options) {
             return;
         }
 
-        const documents = getDocuments(fastify);
+        const { filename, uploaded_by } = request.query;
+        const documents = getDocuments(fastify, { filename, uploaded_by });
 
         if (!documents) {
             reply.code(500);

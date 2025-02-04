@@ -14,6 +14,13 @@ const documentSchema = {
 
 const getDocumentsOptions = {
     schema: {
+        querystring: {
+            type: "object",
+            properties: {
+                filename: { type: "string" },
+                uploaded_by: { type: "string" }
+            }
+        },
         response: {
             200: {
                 type: "array",
@@ -54,43 +61,8 @@ const getDocumentsByOfferIdOptions = {
         },
         response: {
             200: {
-                type: "object",
-                properties: {
-                    documents: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                id: { type: "integer" },
-                                filename: { type: "string" },
-                                file_url: { type: "string" },
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    },
-};
-
-const getDocumentContentOptions = {
-    schema: {
-        params: {
-            type: "object",
-            properties: {
-                fileId: { type: "string" },
-            },
-            required: ["fileId"],
-        },
-        response: {
-            200: {
-                type: "string",
-            },
-            404: {
-                type: "object",
-                properties: {
-                    error: { type: "string" },
-                },
+                type: "array",
+                items: { $ref: "documentSchema#" },
             },
         },
     },
@@ -98,11 +70,11 @@ const getDocumentContentOptions = {
 
 const createDocumentOptions = {
     schema: {
-        headers: {
+        body: {
             type: "object",
             properties: {
                 offer_id: { type: "integer" },
-                uploaded_by: { type: "string" },
+                uploaded_by: { type: "string" }
             },
             required: ["offer_id", "uploaded_by"],
         },
@@ -126,12 +98,11 @@ const updateDocumentOptions = {
             },
             required: ["id"],
         },
-        headers: {
+        body: {
             type: "object",
             properties: {
-                uploaded_by: { type: "string" },
+                uploaded_by: { type: "string" }
             },
-            required: ["uploaded_by"],
         },
         response: {
             200: {
@@ -164,4 +135,30 @@ const deleteDocumentOptions = {
     },
 };
 
-export { documentSchema, getDocumentsOptions, getDocumentOptions, getDocumentsByOfferIdOptions, getDocumentContentOptions, createDocumentOptions, updateDocumentOptions, deleteDocumentOptions };
+const getDocumentContentOptions = {
+    schema: {
+        params: {
+            type: "object",
+            properties: {
+                fileId: { type: "integer" },
+            },
+            required: ["fileId"],
+        },
+        response: {
+            200: {
+                type: "string"
+            },
+        },
+    },
+};
+
+export {
+    documentSchema,
+    getDocumentsOptions,
+    getDocumentOptions,
+    createDocumentOptions,
+    updateDocumentOptions,
+    deleteDocumentOptions,
+    getDocumentsByOfferIdOptions,
+    getDocumentContentOptions
+};

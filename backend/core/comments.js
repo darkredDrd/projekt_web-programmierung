@@ -1,8 +1,21 @@
-export function getComments(fastify) {
-    const statement = fastify.db.prepare("SELECT * FROM comments");
+export function getComments(fastify, filters = {}) {
+    let query = "SELECT * FROM comments WHERE 1=1";
+    const params = [];
+
+    if (filters.author) {
+        query += " AND author LIKE ?";
+        params.push(`%${filters.author}%`);
+    }
+
+    if (filters.content) {
+        query += " AND content LIKE ?";
+        params.push(`%${filters.content}%`);
+    }
+
+    const statement = fastify.db.prepare(query);
 
     try {
-        const comments = statement.all();
+        const comments = statement.all(...params);
         return comments;
     } catch (err) {
         fastify.log.error(err);

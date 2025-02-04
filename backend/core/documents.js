@@ -9,11 +9,24 @@ const __dirname = path.dirname(__filename);
 
 const assetsDir = path.join(__dirname, '../assets');
 
-export function getDocuments(fastify) {
-    const statement = fastify.db.prepare("SELECT * FROM documents");
+export function getDocuments(fastify, filters = {}) {
+    let query = "SELECT * FROM documents WHERE 1=1";
+    const params = [];
+
+    if (filters.filename) {
+        query += " AND filename LIKE ?";
+        params.push(`%${filters.filename}%`);
+    }
+
+    if (filters.uploaded_by) {
+        query += " AND uploaded_by LIKE ?";
+        params.push(`%${filters.uploaded_by}%`);
+    }
+
+    const statement = fastify.db.prepare(query);
 
     try {
-        const documents = statement.all();
+        const documents = statement.all(...params);
         return documents;
     } catch (err) {
         fastify.log.error(err);

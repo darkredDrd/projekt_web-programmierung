@@ -13,6 +13,13 @@ const commentSchema = {
 
 const getCommentsOptions = {
     schema: {
+        querystring: {
+            type: "object",
+            properties: {
+                author: { type: "string" },
+                content: { type: "string" }
+            }
+        },
         response: {
             200: {
                 type: "array",
@@ -54,17 +61,7 @@ const getCommentsByOfferIdOptions = {
         response: {
             200: {
                 type: "array",
-                items: {
-                    type: "object",
-                    properties: {
-                        id: { type: "integer" },
-                        offer_id: { type: "integer" },
-                        author: { type: "string" },
-                        content: { type: "string" },
-                        created_at: { type: "string" },
-                        updated_at: { type: "string" },
-                    },
-                },
+                items: { $ref: "commentSchema#" },
             },
         },
     },
@@ -82,7 +79,7 @@ const createCommentOptions = {
             required: ["offer_id", "author", "content"],
         },
         response: {
-            200: {
+            201: {
                 type: "object",
                 properties: {
                     comment: { $ref: "commentSchema#" },
@@ -108,6 +105,7 @@ const updateCommentOptions = {
                 author: { type: "string" },
                 content: { type: "string" },
             },
+            required: ["offer_id", "author", "content"],
         },
         response: {
             200: {
@@ -144,8 +142,8 @@ export {
     commentSchema,
     getCommentsOptions,
     getCommentOptions,
-    getCommentsByOfferIdOptions,
     createCommentOptions,
     updateCommentOptions,
     deleteCommentOptions,
+    getCommentsByOfferIdOptions
 };
