@@ -5,7 +5,18 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/db/offers
-  body: none
+  url: http://localhost:8080/api/offers
+  body: json
   auth: none
+}
+
+body:json {
+  {
+    "customer_id": 2,
+    "title": "Angebot-Test_neu",
+    "description": "Dies ist ein Test Angebot, aber neu",
+    "price": 180.60,
+    "status": "draft",
+    "created_by": "John Doe"
+  }
 }

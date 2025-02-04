@@ -1,11 +1,19 @@
 meta {
   name: Update Document
   type: http
-  seq: 4
+  seq: 6
 }
 
 put {
-  url: http://localhost:8080/db/documents/1
-  body: none
+  url: http://localhost:8080/api/documents/1
+  body: multipartForm
   auth: none
+}
+
+headers {
+  uploaded_by: "Jane Doe"
+}
+
+body:multipart-form {
+  : @file(C:\Users\nicla\OneDrive\Desktop\Test.txt)
 }

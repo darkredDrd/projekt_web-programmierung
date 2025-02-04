@@ -1,3 +1,14 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
+
+// Define __dirname for ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const assetsDir = path.join(__dirname, '../assets');
+
 export function getDocuments(fastify) {
     const statement = fastify.db.prepare("SELECT * FROM documents");
 
@@ -22,9 +33,84 @@ export function getDocumentById(fastify, id) {
     }
 }
 
-export function createDocument(fastify, documentProps) {
+export function getDocumentsByOfferId(fastify, offerId) {
+    const statement = fastify.db.prepare(`
+        SELECT id, filename, file_url
+        FROM documents
+        WHERE offer_id = ?
+    `);
+
+    try {
+        const documents = statement.all(offerId);
+        return documents;
+    } catch (err) {
+        fastify.log.error(err);
+        return null;
+    }
+}
+
+export async function createDocument(fastify, documentProps, file) {
+    const { offer_id, uploaded_by } = documentProps;
+    const filename = file.filename;
+
     // Validate the input to ensure required properties are provided
-    if (!documentProps.offer_id || !documentProps.filename || !documentProps.file_url) {
+    if (!offer_id || !uploaded_by || !file) {
+        throw new Error('Missing required document properties.');
+    }
+
+    // Ensure the file is a .txt file
+    if (path.extname(filename) !== '.txt') {
+        throw new Error('Only .txt files are supported.');
+    }
+
+    // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
+    const now = new Date();
+    const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
+
+    // Generate a unique ID for the file
+    const fileId = uuidv4();
+    const filePath = path.join(assetsDir, `${fileId}.txt`);
+
+    // Save the file to the filesystem
+    await fs.mkdir(assetsDir, { recursive: true });
+    await fs.writeFile(filePath, await file.toBuffer());
+
+    const insertIntostatement = fastify.db.prepare(`
+        INSERT INTO documents (offer_id, filename, file_url, uploaded_by, uploaded_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const selectStatement = fastify.db.prepare("SELECT * FROM documents WHERE id = ?");
+
+    const documentToCreate = {
+        offer_id,
+        filename,
+        file_url: `/assets/${fileId}.txt`,
+        uploaded_by,
+        uploaded_at: sqliteTimestamp,
+        updated_at: sqliteTimestamp
+    };
+
+    try {
+        const { offer_id, filename, file_url, uploaded_by, uploaded_at, updated_at } = documentToCreate;
+        const info = insertIntostatement.run(offer_id, filename, file_url, uploaded_by, uploaded_at, updated_at);
+
+        // Check if the insertion was successful
+        if (!info.lastInsertRowid) {
+            throw new Error('Failed to insert document.');
+        }
+
+        return selectStatement.get(info.lastInsertRowid);
+    } catch (err) {
+        fastify.log.error(err);
+        return null;
+    }
+}
+
+export async function updateDocument(fastify, documentId, documentProps, file) {
+    const { uploaded_by } = documentProps;
+
+    // Validate the input to ensure required properties are provided
+    if (!documentId || (!file && !uploaded_by)) {
         throw new Error('Missing required document properties.');
     }
 
@@ -32,71 +118,44 @@ export function createDocument(fastify, documentProps) {
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
-    const insertIntostatement = fastify.db.prepare(`
-        INSERT INTO documents (offer_id, filename, file_url, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?)
-    `);
-    const selectStatement = fastify.db.prepare("SELECT * FROM documents WHERE id = ?");
-
-    const documentToCreate = {
-        offer_id: documentProps.offer_id,
-        filename: documentProps.filename,
-        file_url: documentProps.file_url,
-        created_at: sqliteTimestamp,
-        updated_at: sqliteTimestamp
-    };
-
-    try {
-        const { offer_id, filename, file_url, created_at, updated_at } = documentToCreate;
-        const info = insertIntostatement.run(offer_id, filename, file_url, created_at, updated_at);
-
-        // Check if the insertion was successful
-        if (!info.lastInsertRowid) {
-            throw new Error('Failed to insert document.');
-        }
-
-        // Retrieve the created document by its ID
-        const createdDocument = selectStatement.get(info.lastInsertRowid);
-        return createdDocument;
-    } catch (err) {
-        // Log the error for debugging
-        fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
-    }
-}
-
-export function updateDocument(fastify, id, documentProps) {
-    // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
-    const now = new Date();
-    const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
-
-    // Build the dynamic SQL query based on provided properties
     const fields = [];
     const values = [];
 
-    if (documentProps.offer_id) {
-        fields.push("offer_id = ?");
-        values.push(documentProps.offer_id);
-    }
-    if (documentProps.filename) {
-        fields.push("filename = ?");
-        values.push(documentProps.filename);
-    }
-    if (documentProps.file_url) {
-        fields.push("file_url = ?");
-        values.push(documentProps.file_url);
+    if (uploaded_by) {
+        fields.push('uploaded_by = ?');
+        values.push(uploaded_by);
     }
 
-    // updated_at is always updated
-    fields.push("updated_at = ?");
+    if (file) {
+        const filename = file.filename;
+
+        // Ensure the file is a .txt file
+        if (path.extname(filename) !== '.txt') {
+            throw new Error('Only .txt files are supported.');
+        }
+
+        // Generate a unique ID for the file
+        const fileId = uuidv4();
+        const filePath = path.join(assetsDir, `${fileId}.txt`);
+
+        // Save the file to the filesystem
+        await fs.mkdir(assetsDir, { recursive: true });
+        await fs.writeFile(filePath, await file.toBuffer());
+
+        fields.push('filename = ?');
+        values.push(filename);
+
+        fields.push('file_url = ?');
+        values.push(`/assets/${fileId}.txt`);
+    }
+
+    fields.push('updated_at = ?');
     values.push(sqliteTimestamp);
-
-    // Add the comment ID to the values array
-    values.push(id);
+    values.push(documentId);
 
     const updateStatement = fastify.db.prepare(`
         UPDATE documents
-        SET ${fields.join(", ")}
+        SET ${fields.join(', ')}
         WHERE id = ?
     `);
     const selectStatement = fastify.db.prepare("SELECT * FROM documents WHERE id = ?");
@@ -104,17 +163,15 @@ export function updateDocument(fastify, id, documentProps) {
     try {
         const info = updateStatement.run(...values);
 
+        // Check if the update was successful
         if (info.changes === 0) {
-            throw new Error(`Document with ID ${id} not found`);
+            throw new Error('Failed to update document or no changes made.');
         }
 
-        // Retrieve the updated document by its ID
-        const updatedDocument = selectStatement.get(id);
-        return updatedDocument;
+        return selectStatement.get(documentId);
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        return null;
     }
 }
 

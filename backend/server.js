@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import { customerRoutes } from "./routes/customer.routes.js";
 import { commentRoutes } from "./routes/comment.routes.js";
 import { documentRoutes } from "./routes/document.routes.js";
@@ -17,6 +18,9 @@ fastify.addSchema(commentSchema);
 fastify.addSchema(documentSchema);
 fastify.addSchema(offerSchema);
 
+// Register the multipart plugin
+fastify.register(multipart);
+
 // CORS integration to improve security for Frontend
 fastify.register(cors, {
     origin: (origin, cb) => {
@@ -30,13 +34,14 @@ fastify.register(cors, {
 });
 
 fastify.register(dbConnector);
-fastify.register(customerRoutes, { prefix: "/db" });
-fastify.register(commentRoutes, { prefix: "/db" });
-fastify.register(documentRoutes, { prefix: "/db" });
-fastify.register(offerRoutes, { prefix: "/db" });
+fastify.register(customerRoutes, { prefix: "/api" });
+fastify.register(commentRoutes, { prefix: "/api" });
+fastify.register(documentRoutes, { prefix: "/api" });
+fastify.register(offerRoutes, { prefix: "/api" });
 
 try {
     await fastify.listen({ port: 8080 });
+    console.log(`Server is running at http://localhost:8080`);
 } catch (err) {
     fastify.log.error(err);
     process.exit(1);

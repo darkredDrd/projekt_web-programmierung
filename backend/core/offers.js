@@ -34,7 +34,7 @@ export function createOffer(fastify, offerProps) {
 
     const insertIntostatement = fastify.db.prepare(`
         INSERT INTO offers (customer_id, title, description, price, status, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const selectStatement = fastify.db.prepare("SELECT * FROM offers WHERE id = ?");
 
