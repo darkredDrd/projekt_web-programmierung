@@ -1,7 +1,12 @@
 export function checkPermission(role, operation) {
     const permissions = {
-        'Account-Manager': ['createOffer', 'updateOffer', 'deleteOffer', 'updateOfferStatus', 'createComment', 'updateComment', 'deleteComment'],
-        'Developer': ['createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent'],
+        'Account-Manager': [
+            'createOffer', 'updateOffer', 'deleteOffer', 'updateOfferStatus', 'getOffers', 'getOfferById',
+            'createComment', 'updateComment', 'deleteComment', 'getComments', 'getCommentById',
+            'createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent', 'getDocuments', 'getDocumentById', 'getDocumentsByOfferId',
+            'createCustomer', 'updateCustomer', 'deleteCustomer', 'getCustomers', 'getCustomerById'
+        ],
+        'Developer': ['createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent', 'importLegacyOffer'],
         'User': ['getOffers', 'getOfferById', 'getDocuments', 'getDocumentById', 'getComments', 'getCommentById']
     };
 

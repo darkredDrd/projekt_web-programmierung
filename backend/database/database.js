@@ -24,6 +24,7 @@ const createTableStatements = `
         title TEXT NOT NULL, -- to identify the offer
         description TEXT NOT NULL, -- to describe the offer
         price REAL NOT NULL, -- to specify the price of the offer
+        currency TEXT CHECK(currency IN ('EUR', 'USD', 'GBP')) NOT NULL, -- to specify the currency of the price
         status TEXT CHECK(status IN ('draft', 'in_progress', 'active', 'on_ice')) NOT NULL, 
         created_by TEXT NOT NULL, -- to assign the offer to an account manager
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

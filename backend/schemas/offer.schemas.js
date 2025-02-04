@@ -5,9 +5,10 @@ const offerSchema = {
         id: { type: "integer" },
         customer_id: { type: "integer" },
         title: { type: "string" },
-        desciption: { type: "string" },
+        description: { type: "string" },
         price: { type: "number" },
-        status: { type: "string", enum: ["draft", "active", "on_ice"] },
+        currency: { type: "string", enum: ["EUR", "USD", "GBP"] },
+        status: { type: "string" },
         created_by: { type: "string" },
         created_at: { type: "string" },
         updated_at: { type: "string" },
@@ -54,9 +55,10 @@ const createOfferOptions = {
                 title: { type: "string" },
                 description: { type: "string" },
                 price: { type: "number" },
+                currency: { type: "string", enum: ["EUR", "USD", "GBP"] },
                 created_by: { type: "string" },
             },
-            required: ["customer_id", "title", "description", "price", "created_by"],
+            required: ["customer_id", "title", "description", "price", "currency", "created_by"],
         },
         response: {
             201: {
@@ -85,6 +87,7 @@ const updateOfferOptions = {
                 title: { type: "string" },
                 description: { type: "string" },
                 price: { type: "number" },
+                currency: { type: "string", enum: ["EUR", "USD", "GBP"] },
                 created_by: { type: "string" },
             },
         },
@@ -93,6 +96,26 @@ const updateOfferOptions = {
                 type: "object",
                 properties: {
                     offer: { $ref: "offerSchema#" },
+                },
+            },
+        },
+    },
+};
+
+const deleteOfferOptions = {
+    schema: {
+        params: {
+            type: "object",
+            properties: {
+                id: { type: "integer" },
+            },
+            required: ["id"],
+        },
+        response: {
+            200: {
+                type: "object",
+                properties: {
+                    message: { type: "string" },
                 },
             },
         },
@@ -126,32 +149,12 @@ const updateOfferStatusOptions = {
     },
 };
 
-const deleteOfferOptions = {
-    schema: {
-        params: {
-            type: "object",
-            properties: {
-                id: { type: "integer" },
-            },
-            required: ["id"],
-        },
-        response: {
-            200: {
-                type: "object",
-                properties: {
-                    message: { type: "string" },
-                },
-            },
-        },
-    },
-};
-
 export {
     offerSchema,
     getOffersOptions,
     getOfferOptions,
     createOfferOptions,
     updateOfferOptions,
-    updateOfferStatusOptions,
     deleteOfferOptions,
-}
+    updateOfferStatusOptions
+};

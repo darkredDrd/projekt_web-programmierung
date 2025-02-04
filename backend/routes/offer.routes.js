@@ -82,8 +82,7 @@ async function offerRoutes(fastify, options) {
             reply.code(201);
             return { offer: offer };
         } catch (err) {
-            reply.code(400);
-            return { error: err.message };
+            reply.code(400).send({ error: err.message });
         }
     });
 
@@ -100,15 +99,12 @@ async function offerRoutes(fastify, options) {
             const offer = await updateOffer(fastify, id, offerProps);
 
             if (!offer) {
-                reply.code(400);
-                return { error: `Offer with ID ${id} not found` };
+                reply.code(400).send({ error: `Offer with ID ${id} not found` });
+            } else {
+                reply.code(200).send({ offer: offer });
             }
-
-            reply.code(200);
-            return { offer: offer };
         } catch (err) {
-            reply.code(400);
-            return { error: err.message };
+            reply.code(400).send({ error: err.message });
         }
     });
 
@@ -125,15 +121,12 @@ async function offerRoutes(fastify, options) {
             const offer = await updateOfferStatus(fastify, id, status);
 
             if (!offer) {
-                reply.code(400);
-                return { error: `Offer with ID ${id} not found` };
+                reply.code(400).send({ error: `Offer with ID ${id} not found` });
+            } else {
+                reply.code(200).send({ offer: offer });
             }
-
-            reply.code(200);
-            return { offer: offer };
         } catch (err) {
-            reply.code(400);
-            return { error: err.message };
+            reply.code(400).send({ error: err.message });
         }
     });
 
@@ -148,12 +141,10 @@ async function offerRoutes(fastify, options) {
         const offer = deleteOffer(fastify, id);
 
         if (!offer) {
-            reply.code(400);
-            return { error: `Offer with ID ${id} not found` };
+            reply.code(400).send({ error: `Offer with ID ${id} not found` });
+        } else {
+            reply.code(200).send({ message: `Offer with ID ${id} successfully deleted` });
         }
-
-        reply.code(200);
-        return { message: `Offer with ID ${id} successfully deleted` };
     });
 }
 

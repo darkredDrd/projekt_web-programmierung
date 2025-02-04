@@ -27,8 +27,8 @@ export function createOffer(fastify, offerProps) {
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
     const insertIntostatement = fastify.db.prepare(`
-        INSERT INTO offers (customer_id, title, description, price, status, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO offers (customer_id, title, description, price, currency, status, created_by, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const selectStatement = fastify.db.prepare("SELECT * FROM offers WHERE id = ?");
 
@@ -37,6 +37,7 @@ export function createOffer(fastify, offerProps) {
         title: offerProps.title,
         description: offerProps.description,
         price: offerProps.price,
+        currency: offerProps.currency,
         status: 'draft', // Status immer auf "draft" setzen
         created_by: offerProps.created_by,
         created_at: sqliteTimestamp,
@@ -44,8 +45,8 @@ export function createOffer(fastify, offerProps) {
     };
 
     try {
-        const { customer_id, title, description, price, status, created_by, created_at, updated_at } = offerToCreate;
-        const info = insertIntostatement.run(customer_id, title, description, price, status, created_by, created_at, updated_at);
+        const { customer_id, title, description, price, currency, status, created_by, created_at, updated_at } = offerToCreate;
+        const info = insertIntostatement.run(customer_id, title, description, price, currency, status, created_by, created_at, updated_at);
 
         // Check if the insertion was successful
         if (!info.lastInsertRowid) {
@@ -84,6 +85,10 @@ export function updateOffer(fastify, offerId, offerProps) {
     if (offerProps.price) {
         fields.push('price = ?');
         values.push(offerProps.price);
+    }
+    if (offerProps.currency) {
+        fields.push('currency = ?');
+        values.push(offerProps.currency);
     }
     if (offerProps.created_by) {
         fields.push('created_by = ?');
