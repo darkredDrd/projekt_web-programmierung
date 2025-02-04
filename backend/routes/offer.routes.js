@@ -3,15 +3,18 @@ import {
     getOfferById,
     createOffer,
     updateOffer,
-    deleteOffer
+    deleteOffer,
+    updateOfferStatus
 } from '../core/offers.js';
 import {
     getOffersOptions,
     getOfferOptions,
     createOfferOptions,
     updateOfferOptions,
-    deleteOfferOptions
+    deleteOfferOptions,
+    updateOfferStatusOptions
 } from '../schemas/offer.schemas.js';
+import { checkPermission } from '../authorization.js';
 
 /**
  * Includes the routes for the '/offers' API endpoint.
@@ -22,21 +25,32 @@ import {
  * - POST a new offer
  * - PUT (update) an offer by ID
  * - DELETE an offer by ID
+ * - PUT (update) the status of an offer by ID
  */
 async function offerRoutes(fastify, options) {
     fastify.get("/offers", getOffersOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getOffers')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const offers = getOffers(fastify);
 
         if (!offers) {
             reply.code(500);
             return { error: "Could not get offers" };
         }
-    
+
         reply.code(200);
         return offers;
     });
 
     fastify.get("/offers/:id", getOfferOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getOfferById')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
 
         const offer = getOfferById(fastify, id);
@@ -50,40 +64,90 @@ async function offerRoutes(fastify, options) {
     });
 
     fastify.post("/offers", createOfferOptions, async (request, reply) => {
-        const offerProps = request.body;
-
-        const offer = createOffer(fastify, offerProps);
-
-        if (!offer) {
-            reply.code(500);
-            return { error: "Could not create offer" };
+        if (!checkPermission(request.role, 'createOffer')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
         }
 
-        reply.code(201);
-        return { offer: offer };
+        const offerProps = request.body;
+
+        try {
+            const offer = await createOffer(fastify, offerProps);
+
+            if (!offer) {
+                reply.code(500);
+                return { error: "Could not create offer" };
+            }
+
+            reply.code(201);
+            return { offer: offer };
+        } catch (err) {
+            reply.code(400);
+            return { error: err.message };
+        }
     });
 
     fastify.put("/offers/:id", updateOfferOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'updateOffer')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
         const offerProps = request.body;
 
-        const updatedOffer = updateOffer(fastify, id, offerProps);
+        try {
+            const offer = await updateOffer(fastify, id, offerProps);
 
-        if (!updatedOffer) {
-            reply.code(500);
-            return { error: `Could not update offer with ID ${id}` };
+            if (!offer) {
+                reply.code(400);
+                return { error: `Offer with ID ${id} not found` };
+            }
+
+            reply.code(200);
+            return { offer: offer };
+        } catch (err) {
+            reply.code(400);
+            return { error: err.message };
+        }
+    });
+
+    fastify.put("/offers/:id/status", updateOfferStatusOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'updateOfferStatus')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
         }
 
-        reply.code(200);
-        return { offer: updatedOffer };
+        const id = parseInt(request.params.id, 10);
+        const { status } = request.body;
+
+        try {
+            const offer = await updateOfferStatus(fastify, id, status);
+
+            if (!offer) {
+                reply.code(400);
+                return { error: `Offer with ID ${id} not found` };
+            }
+
+            reply.code(200);
+            return { offer: offer };
+        } catch (err) {
+            reply.code(400);
+            return { error: err.message };
+        }
     });
 
     fastify.delete("/offers/:id", deleteOfferOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'deleteOffer')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
 
-        const deletedOffer = deleteOffer(fastify, id);
+        const offer = deleteOffer(fastify, id);
 
-        if (!deletedOffer) {
+        if (!offer) {
             reply.code(400);
             return { error: `Offer with ID ${id} not found` };
         }
@@ -91,6 +155,6 @@ async function offerRoutes(fastify, options) {
         reply.code(200);
         return { message: `Offer with ID ${id} successfully deleted` };
     });
-};
+}
 
 export { offerRoutes };

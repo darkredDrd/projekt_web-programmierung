@@ -37,10 +37,27 @@ export function getCommentsByOfferId(fastify, offerId) {
     }
 }
 
-export function createComment(fastify, commentProps) {
+async function getOfferStatus(fastify, offerId) {
+    const statement = fastify.db.prepare("SELECT status FROM offers WHERE id = ?");
+    try {
+        const offer = statement.get(offerId);
+        return offer ? offer.status : null;
+    } catch (err) {
+        fastify.log.error(err);
+        throw err;
+    }
+}
+
+export async function createComment(fastify, commentProps) {
     // Validate the input to ensure required properties are provided
     if (!commentProps.offer_id || !commentProps.author || !commentProps.content) {
         throw new Error('Missing required comment properties.');
+    }
+
+    // Check the status of the offer
+    const offerStatus = await getOfferStatus(fastify, commentProps.offer_id);
+    if (offerStatus === 'Draft') {
+        throw new Error('Cannot add comments to an offer in Draft status.');
     }
 
     // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
@@ -70,13 +87,10 @@ export function createComment(fastify, commentProps) {
             throw new Error('Failed to insert comment.');
         }
 
-        // Retrieve the created comment by its ID
-        const createdComment = selectStatement.get(info.lastInsertRowid);
-        return createdComment;
+        return selectStatement.get(info.lastInsertRowid);
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err;
     }
 }
 

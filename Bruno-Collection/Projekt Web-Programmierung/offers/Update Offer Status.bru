@@ -1,0 +1,17 @@
+meta {
+  name: Update Offer Status
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8080/api/offers/1/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "active"
+  }
+}

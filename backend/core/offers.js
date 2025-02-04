@@ -23,12 +23,6 @@ export function getOfferById(fastify, id) {
 }
 
 export function createOffer(fastify, offerProps) {
-    // Validate the input to ensure required properties are provided
-    if (!offerProps.customer_id || !offerProps.title || !offerProps.description || !offerProps.price || !offerProps.status || !offerProps.created_by) {
-        throw new Error('Missing required offer properties.');
-    }
-
-    // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
@@ -43,7 +37,7 @@ export function createOffer(fastify, offerProps) {
         title: offerProps.title,
         description: offerProps.description,
         price: offerProps.price,
-        status: offerProps.status,
+        status: 'draft', // Status immer auf "draft" setzen
         created_by: offerProps.created_by,
         created_at: sqliteTimestamp,
         updated_at: sqliteTimestamp
@@ -68,34 +62,41 @@ export function createOffer(fastify, offerProps) {
     }
 }
 
-export function updateOffer(fastify, id, offerProps) {
-    // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
+export function updateOffer(fastify, offerId, offerProps) {
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
-    // Build the dynamic SQL query based on provided properties
     const fields = [];
     const values = [];
 
     if (offerProps.customer_id) {
-        fields.push("customer_id = ?");
+        fields.push('customer_id = ?');
         values.push(offerProps.customer_id);
     }
-    if (offerProps.some_other_field) { // Replace with actual offer fields
-        fields.push("some_other_field = ?");
-        values.push(offerProps.some_other_field);
+    if (offerProps.title) {
+        fields.push('title = ?');
+        values.push(offerProps.title);
+    }
+    if (offerProps.description) {
+        fields.push('description = ?');
+        values.push(offerProps.description);
+    }
+    if (offerProps.price) {
+        fields.push('price = ?');
+        values.push(offerProps.price);
+    }
+    if (offerProps.created_by) {
+        fields.push('created_by = ?');
+        values.push(offerProps.created_by);
     }
 
-    // Always update the updated_at field
-    fields.push("updated_at = ?");
+    fields.push('updated_at = ?');
     values.push(sqliteTimestamp);
-
-    // Add the offer ID to the values array
-    values.push(id);
+    values.push(offerId);
 
     const updateStatement = fastify.db.prepare(`
         UPDATE offers
-        SET ${fields.join(", ")}
+        SET ${fields.join(', ')}
         WHERE id = ?
     `);
     const selectStatement = fastify.db.prepare("SELECT * FROM offers WHERE id = ?");
@@ -103,17 +104,41 @@ export function updateOffer(fastify, id, offerProps) {
     try {
         const info = updateStatement.run(...values);
 
+        // Check if the update was successful
         if (info.changes === 0) {
-            throw new Error(`Offer with ID ${id} not found`);
+            throw new Error('Failed to update offer or no changes made.');
         }
 
-        // Retrieve the updated offer by its ID
-        const updatedOffer = selectStatement.get(id);
-        return updatedOffer;
+        return selectStatement.get(offerId);
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err;
+    }
+}
+
+export function updateOfferStatus(fastify, offerId, newStatus) {
+    const now = new Date();
+    const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
+
+    const updateStatement = fastify.db.prepare(`
+        UPDATE offers
+        SET status = ?, updated_at = ?
+        WHERE id = ?
+    `);
+    const selectStatement = fastify.db.prepare("SELECT * FROM offers WHERE id = ?");
+
+    try {
+        const info = updateStatement.run(newStatus, sqliteTimestamp, offerId);
+
+        // Check if the update was successful
+        if (info.changes === 0) {
+            throw new Error('Failed to update offer status or no changes made.');
+        }
+
+        return selectStatement.get(offerId);
+    } catch (err) {
+        fastify.log.error(err);
+        throw err;
     }
 }
 

@@ -12,6 +12,7 @@ import {
     updateCustomerOptions,
     deleteCustomerOptions
 } from '../schemas/customer.schemas.js';
+import { checkPermission } from '../authorization.js';
 
 /**
  * Includes the routes for the '/customers' API endpoint.
@@ -25,18 +26,28 @@ import {
  */
 async function customerRoutes(fastify, options) {
     fastify.get("/customers", getCustomersOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getCustomers')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const customers = getCustomers(fastify);
 
         if (!customers) {
             reply.code(500);
             return { error: "Could not get customers" };
         }
-    
+
         reply.code(200);
         return customers;
     });
 
     fastify.get("/customers/:id", getCustomerOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getCustomerById')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
 
         const customer = getCustomerById(fastify, id);
@@ -50,35 +61,60 @@ async function customerRoutes(fastify, options) {
     });
 
     fastify.post("/customers", createCustomerOptions, async (request, reply) => {
-        const customerProps = request.body;
-
-        const customer = createCustomer(fastify, customerProps);
-
-        if (!customer) {
-            reply.code(500);
-            return { error: "Could not create customer" };
+        if (!checkPermission(request.role, 'createCustomer')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
         }
 
-        reply.code(201);
-        return { customer: customer };
+        const customerProps = request.body;
+
+        try {
+            const customer = await createCustomer(fastify, customerProps);
+
+            if (!customer) {
+                reply.code(500);
+                return { error: "Could not create customer" };
+            }
+
+            reply.code(201);
+            return { customer: customer };
+        } catch (err) {
+            reply.code(400);
+            return { error: err.message };
+        }
     });
 
     fastify.put("/customers/:id", updateCustomerOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'updateCustomer')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
         const customerProps = request.body;
 
-        const customer = updateCustomer(fastify, id, customerProps);
+        try {
+            const customer = await updateCustomer(fastify, id, customerProps);
 
-        if (!customer) {
-            reply.code(500);
-            return { error: `Could not update customer with ID ${id}` };
+            if (!customer) {
+                reply.code(500);
+                return { error: `Could not update customer with ID ${id}` };
+            }
+
+            reply.code(200);
+            return { customer: customer };
+        } catch (err) {
+            reply.code(400);
+            return { error: err.message };
         }
-
-        reply.code(200);
-        return { customer: customer };
     });
 
     fastify.delete("/customers/:id", deleteCustomerOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'deleteCustomer')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
 
         const customer = deleteCustomer(fastify, id);
@@ -91,6 +127,6 @@ async function customerRoutes(fastify, options) {
         reply.code(200);
         return { message: `Customer with ID ${id} successfully deleted` };
     });
-  };
+}
 
-  export { customerRoutes };
+export { customerRoutes };

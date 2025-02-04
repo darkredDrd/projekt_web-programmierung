@@ -1,20 +1,21 @@
 import {
     getDocuments,
     getDocumentById,
-    getDocumentsByOfferId,
     createDocument,
     updateDocument,
-    deleteDocument
+    deleteDocument,
+    getDocumentsByOfferId
 } from '../core/documents.js';
 import {
     getDocumentsOptions,
     getDocumentOptions,
-    getDocumentsByOfferIdOptions,
-    getDocumentContentOptions,
     createDocumentOptions,
     updateDocumentOptions,
-    deleteDocumentOptions
+    deleteDocumentOptions,
+    getDocumentsByOfferIdOptions,
+    getDocumentContentOptions
 } from '../schemas/document.schemas.js';
+import { checkPermission } from '../authorization.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -29,14 +30,19 @@ const __dirname = path.dirname(__filename);
  * With this route the user can:
  * - GET all documents
  * - GET a single document by ID
- * - GET all documents for a specific offer
- * - GET the content of a document by URL
  * - POST a new document
  * - PUT (update) a document by ID
  * - DELETE a document by ID
+ * - GET all documents for a specific offer
+ * - GET the content of a document by URL
  */
 async function documentRoutes(fastify, options) {
     fastify.get("/documents", getDocumentsOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getDocuments')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const documents = getDocuments(fastify);
 
         if (!documents) {
@@ -49,6 +55,11 @@ async function documentRoutes(fastify, options) {
     });
 
     fastify.get("/documents/:id", getDocumentOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getDocumentById')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
 
         const document = getDocumentById(fastify, id);
@@ -62,6 +73,11 @@ async function documentRoutes(fastify, options) {
     });
 
     fastify.get("/offers/:offerId/documents", getDocumentsByOfferIdOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getDocumentsByOfferId')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const offerId = parseInt(request.params.offerId, 10);
 
         const documents = getDocumentsByOfferId(fastify, offerId);
@@ -75,6 +91,11 @@ async function documentRoutes(fastify, options) {
     });
 
     fastify.get("/documents/content/:fileId", getDocumentContentOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getDocumentContent')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const fileId = parseInt(request.params.fileId, 10);
 
         // Fetch the document from the database to get the file URL
@@ -96,6 +117,11 @@ async function documentRoutes(fastify, options) {
     });
 
     fastify.post("/documents", createDocumentOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'createDocument')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const data = await request.file();
         const { offer_id, uploaded_by } = request.headers;
         const file = data;
@@ -119,6 +145,11 @@ async function documentRoutes(fastify, options) {
     });
 
     fastify.put("/documents/:id", updateDocumentOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'updateDocument')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
         const data = await request.file();
         const { uploaded_by } = request.headers;
@@ -143,6 +174,11 @@ async function documentRoutes(fastify, options) {
     });
 
     fastify.delete("/documents/:id", deleteDocumentOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'deleteDocument')) {
+            reply.code(403).send({ error: 'Forbidden' });
+            return;
+        }
+
         const id = parseInt(request.params.id, 10);
 
         const document = deleteDocument(fastify, id);

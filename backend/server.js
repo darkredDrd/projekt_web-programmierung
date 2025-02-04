@@ -33,6 +33,22 @@ fastify.register(cors, {
     }
 });
 
+fastify.addHook('preHandler', async (request, reply) => {
+    const authHeader = request.headers['authorization'];
+    if (!authHeader) {
+        reply.code(401).send({ error: 'Authorization header is missing' });
+        return;
+    }
+
+    const [scheme, role] = authHeader.split(' ');
+    if (scheme !== 'Basic' || !['Account-Manager', 'Developer', 'User'].includes(role)) {
+        reply.code(401).send({ error: 'Invalid authorization scheme or role' });
+        return;
+    }
+
+    request.role = role;
+});
+
 fastify.register(dbConnector);
 fastify.register(customerRoutes, { prefix: "/api" });
 fastify.register(commentRoutes, { prefix: "/api" });
