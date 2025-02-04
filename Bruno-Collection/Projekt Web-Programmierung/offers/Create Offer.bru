@@ -10,13 +10,17 @@ post {
   auth: none
 }
 
+headers {
+  Authorization: Basic Account-Manager
+}
+
 body:json {
   {
-    "customer_id": 2,
+    "customer_id": 1,
     "title": "Angebot-Test_neu",
     "description": "Dies ist ein Test Angebot, aber neu",
     "price": 180.60,
-    "status": "draft",
+    "currency": "EUR",
     "created_by": "John Doe"
   }
 }

@@ -5,7 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/comments
+  url: http://localhost:8080/api/comments?author=John Doe
   body: none
   auth: none
+}
+
+params:query {
+  author: John Doe
+}
+
+headers {
+  Authorization: Basic User
 }
