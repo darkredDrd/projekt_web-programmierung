@@ -1,6 +1,7 @@
 import {
     getComments,
     getCommentById,
+    getCommentsByOfferId,
     createComment,
     updateComment,
     deleteComment
@@ -8,6 +9,7 @@ import {
 import {
     getCommentsOptions,
     getCommentOptions,
+    getCommentsByOfferIdOptions,
     createCommentOptions,
     updateCommentOptions,
     deleteCommentOptions
@@ -19,6 +21,7 @@ import {
  * With this route the user can:
  * - GET all comments
  * - GET a single comment by ID
+ * - GET all comments for a specific offer
  * - POST a new comment
  * - PUT (update) a comment by ID
  * - DELETE a comment by ID
@@ -47,6 +50,19 @@ async function commentRoutes(fastify, options) {
 
         reply.code(200);
         return { comment: comment };
+    });
+
+    fastify.get("/offers/:offerId/comments", getCommentsByOfferIdOptions, async (request, reply) => {
+        const offerId = parseInt(request.params.offerId, 10);
+
+        const comments = getCommentsByOfferId(fastify, offerId);
+        if (!comments) {
+            reply.code(500);
+            return { error: `Could not get comments for offer with ID ${offerId}` };
+        }
+
+        reply.code(200);
+        return comments;
     });
 
     fastify.post("/comments", createCommentOptions, async (request, reply) => {

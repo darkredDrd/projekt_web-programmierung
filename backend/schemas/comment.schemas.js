@@ -42,6 +42,34 @@ const getCommentOptions = {
     },
 };
 
+const getCommentsByOfferIdOptions = {
+    schema: {
+        params: {
+            type: "object",
+            properties: {
+                offerId: { type: "integer" },
+            },
+            required: ["offerId"],
+        },
+        response: {
+            200: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        id: { type: "integer" },
+                        offer_id: { type: "integer" },
+                        author: { type: "string" },
+                        content: { type: "string" },
+                        created_at: { type: "string" },
+                        updated_at: { type: "string" },
+                    },
+                },
+            },
+        },
+    },
+};
+
 const createCommentOptions = {
     schema: {
         body: {
@@ -116,6 +144,7 @@ export {
     commentSchema,
     getCommentsOptions,
     getCommentOptions,
+    getCommentsByOfferIdOptions,
     createCommentOptions,
     updateCommentOptions,
     deleteCommentOptions,

@@ -22,6 +22,21 @@ export function getCommentById(fastify, id) {
     }
 }
 
+export function getCommentsByOfferId(fastify, offerId) {
+    const statement = fastify.db.prepare(`
+        SELECT * FROM comments
+        WHERE offer_id = ?
+    `);
+
+    try {
+        const comments = statement.all(offerId);
+        return comments;
+    } catch (err) {
+        fastify.log.error(err);
+        return null;
+    }
+}
+
 export function createComment(fastify, commentProps) {
     // Validate the input to ensure required properties are provided
     if (!commentProps.offer_id || !commentProps.author || !commentProps.content) {
