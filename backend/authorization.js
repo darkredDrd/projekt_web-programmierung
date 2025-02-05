@@ -7,7 +7,7 @@ export function checkPermission(role, operation) {
             'createCustomer', 'updateCustomer', 'deleteCustomer', 'getCustomers', 'getCustomerById'
         ],
         'Developer': ['createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent', 'importLegacyOffer', 'generateTestData'],
-        'User': ['getOffers', 'getOfferById', 'getDocuments', 'getDocumentById', 'getComments', 'getCommentById', 'getCustomers', 'getCustomerById']
+        'User': ['getOffers', 'getOfferById', 'getDocuments', 'getDocumentById', 'getDocumentContent', 'getComments', 'getCommentById', 'getCustomers', 'getCustomerById']
     };
 
     return permissions[role] && permissions[role].includes(operation);
