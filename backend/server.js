@@ -39,6 +39,13 @@ fastify.register(cors, {
     }
 });
 
+// Add a hook to set the default Authorization header if not present
+fastify.addHook('onRequest', async (request, reply) => {
+    if (!request.headers['authorization']) {
+        request.headers['authorization'] = 'Basic User';
+    }
+});
+
 fastify.addHook('preHandler', async (request, reply) => {
     const authHeader = request.headers['authorization'];
     if (!authHeader) {
