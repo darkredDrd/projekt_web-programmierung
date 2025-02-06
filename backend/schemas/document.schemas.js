@@ -70,11 +70,11 @@ const getDocumentsByOfferIdOptions = {
 
 const createDocumentOptions = {
     schema: {
-        body: {
+        headers: {
             type: "object",
             properties: {
                 offer_id: { type: "integer" },
-                uploaded_by: { type: "string" }
+                uploaded_by: { type: "string" },
             },
             required: ["offer_id", "uploaded_by"],
         },
