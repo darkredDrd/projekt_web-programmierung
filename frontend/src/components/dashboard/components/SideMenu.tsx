@@ -1,47 +1,24 @@
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import Avatar from '@mui/material/Avatar';
-import MuiDrawer, { drawerClasses } from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import MenuContent from './MenuContent';
+import React from 'react';
+import { Box, Drawer, Stack, Typography } from '@mui/material';
+import { useRole } from '../../../services/RoleContext';
 import OptionsMenu from './OptionsMenu';
+import MenuContent from './MenuContent';
 
-const drawerWidth = 240;
+const SideMenu = () => {
+  const { role } = useRole();
 
-const Drawer = styled(MuiDrawer)({
-  width: drawerWidth,
-  flexShrink: 0,
-  boxSizing: 'border-box',
-  mt: 10,
-  [`& .${drawerClasses.paper}`]: {
-    width: drawerWidth,
-    boxSizing: 'border-box',
-  },
-});
-
-export default function SideMenu() {
   return (
     <Drawer
       variant="permanent"
       sx={{
-        display: { xs: 'none', md: 'block' },
-        [`& .${drawerClasses.paper}`]: {
-          backgroundColor: 'background.paper',
+        width: 240, // Feste Breite für das Side-Menu
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: 240, // Feste Breite für das Side-Menu
+          boxSizing: 'border-box',
         },
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          mt: 'calc(var(--template-frame-height, 0px) + 4px)',
-          p: 1.5,
-        }}
-      >
-      </Box>
-      <Divider />
       <Box
         sx={{
           overflow: 'auto',
@@ -62,22 +39,15 @@ export default function SideMenu() {
           borderColor: 'divider',
         }}
       >
-        <Avatar
-          sizes="small"
-          alt="Riley Carter"
-          src="/static/images/avatar/7.jpg"
-          sx={{ width: 36, height: 36 }}
-        />
         <Box sx={{ mr: 'auto' }}>
-          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
-            Riley Carter
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            riley@email.com
+          <Typography variant="caption" sx={{ fontWeight: 500, lineHeight: '16px' }}>
+            {role}
           </Typography>
         </Box>
         <OptionsMenu />
       </Stack>
     </Drawer>
   );
-}
+};
+
+export default SideMenu;

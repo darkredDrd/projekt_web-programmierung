@@ -1,5 +1,6 @@
 import { createCustomer } from '../core/customers.js';
 import { createOffer } from '../core/offers.js';
+import { createComment } from '../core/comments.js';
 import { checkPermission } from '../authorization.js';
 import { testGenerateOptions } from '../schemas/test_generate.schemas.js';
 
@@ -18,42 +19,47 @@ async function testRoutes(fastify, options) {
 
         try {
             // Generate test customers
-            const customer1 = await createCustomer(fastify, {
-                name: "Test Customer 1",
-                email: "test1@example.com",
-                phone: "1234567890",
-                address: "123 Test St"
-            });
-
-            const customer2 = await createCustomer(fastify, {
-                name: "Test Customer 2",
-                email: "test2@example.com",
-                phone: "0987654321",
-                address: "456 Test Ave"
-            });
+            const customers = [];
+            for (let i = 1; i <= 5; i++) {
+                const customer = await createCustomer(fastify, {
+                    name: `Test Customer ${i}`,
+                    email: `test${i}@example.com`,
+                    phone: `123456789${i}`,
+                    address: `${i} Test St`
+                });
+                customers.push(customer);
+            }
 
             // Generate test offers
-            const offer1 = await createOffer(fastify, {
-                customer_id: customer1.id,
-                title: "Test Offer 1",
-                description: "This is a test offer 1",
-                price: 1000,
-                currency: "USD",
-                status: "draft",
-                created_by: "Test User"
-            });
+            const offers = [];
+            for (let i = 1; i <= 8; i++) {
+                const customerIndex = (i % 5) + 1;
+                const offer = await createOffer(fastify, {
+                    customer_id: customers[customerIndex - 1].id,
+                    title: `Test Offer ${i}`,
+                    description: `This is a test offer ${i}`,
+                    price: 1000 * i,
+                    currency: i % 2 === 0 ? "USD" : "EUR",
+                    status: i % 2 === 0 ? "draft" : "active",
+                    created_by: "Test User"
+                });
+                offers.push(offer);
+            }
 
-            const offer2 = await createOffer(fastify, {
-                customer_id: customer2.id,
-                title: "Test Offer 2",
-                description: "This is a test offer 2",
-                price: 2000,
-                currency: "EUR",
-                status: "active",
-                created_by: "Test User"
-            });
+            // Generate test comments
+            const comments = [];
+            for (let i = 0; i < offers.length; i++) {
+                for (let j = 1; j <= 2; j++) {
+                    const comment = await createComment(fastify, {
+                        offer_id: offers[i].id,
+                        content: `This is a test comment ${j} for offer ${offers[i].title}`,
+                        author: "Test User"
+                    });
+                    comments.push(comment);
+                }
+            }
 
-            reply.code(201).send({ customers: [customer1, customer2], offers: [offer1, offer2] });
+            reply.code(201).send({ customers, offers, comments });
         } catch (err) {
             reply.code(500).send({ error: err.message });
         }

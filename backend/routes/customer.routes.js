@@ -69,6 +69,20 @@ async function customerRoutes(fastify, options) {
 
         const customerProps = request.body;
 
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(customerProps.email)) {
+            reply.code(400).send({ error: 'Invalid email format' });
+            return;
+        }
+
+        // Phone validation
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(customerProps.phone)) {
+            reply.code(400).send({ error: 'Invalid phone format. Example: +1234567890' });
+            return;
+        }
+
         try {
             const customer = await createCustomer(fastify, customerProps);
 
@@ -92,6 +106,20 @@ async function customerRoutes(fastify, options) {
 
         const id = parseInt(request.params.id, 10);
         const customerProps = request.body;
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(customerProps.email)) {
+            reply.code(400).send({ error: 'Invalid email format' });
+            return;
+        }
+
+        // Phone validation
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(customerProps.phone)) {
+            reply.code(400).send({ error: 'Invalid phone format. Example: +1234567890' });
+            return;
+        }
 
         try {
             const customer = await updateCustomer(fastify, id, customerProps);

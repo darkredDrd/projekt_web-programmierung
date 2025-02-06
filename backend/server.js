@@ -30,7 +30,7 @@ fastify.register(multipart);
 // CORS integration to improve security for Frontend
 fastify.register(cors, {
     origin: (origin, cb) => {
-        const allowedOrigins = ['http://localhost:3000', 'http://localhost:4200'];
+        const allowedOrigins = ['http://localhost:5173'];
         if (!origin || allowedOrigins.includes(origin)) {
             cb(null, true);
         } else {
@@ -39,13 +39,14 @@ fastify.register(cors, {
     }
 });
 
-// Add a hook to set the default Authorization header if not present
-fastify.addHook('onRequest', async (request, reply) => {
-    if (!request.headers['authorization']) {
-        request.headers['authorization'] = 'Basic User';
-    }
-});
+// // Add a hook to set the default Authorization header if not present
+// fastify.addHook('onRequest', async (request, reply) => {
+//     if (!request.headers['authorization']) {
+//         request.headers['authorization'] = 'Basic User';
+//     }
+// });
 
+// Add a preHandler hook to log handle authorization
 fastify.addHook('preHandler', async (request, reply) => {
     const authHeader = request.headers['authorization'];
     if (!authHeader) {
@@ -66,8 +67,8 @@ fastify.register(dbConnector);
 fastify.register(customerRoutes, { prefix: "/api" });
 fastify.register(commentRoutes, { prefix: "/api" });
 fastify.register(documentRoutes, { prefix: "/api" });
-fastify.register(legacyRoutes, { prefix: "/api" });
 fastify.register(offerRoutes, { prefix: "/api" });
+fastify.register(legacyRoutes, { prefix: "/api" });
 fastify.register(testRoutes, { prefix: "/api" });
 
 try {
