@@ -177,7 +177,7 @@ export const createOffer = async (role: string, data: OffersSchema, setError: (e
     }
     throw error;
   }
-};
+}
 
 export const getDocuments = async (role: string, setError: (error: string) => void) => {
   try {
@@ -194,6 +194,46 @@ export const getDocuments = async (role: string, setError: (error: string) => vo
       setError('Error fetching documents: ' + error.message);
     } else {
       setError('Error fetching documents: An unknown error occurred');
+    }
+    throw error;
+  }
+};
+
+export const fetchDocumentsCount = async (role: string, offerId: number, setError: (error: string) => void) => {
+  try {
+    const response = await axios.get(`${API_URL}/offers/${offerId}/documents`, {
+      headers: {
+        Authorization: role,
+      },
+    });
+    return Array.isArray(response.data.documents) ? response.data.documents.length : 0;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      setError(error.response.data.error);
+    } else if (error instanceof Error) {
+      setError('Error fetching documents count: ' + error.message);
+    } else {
+      setError('Error fetching documents count: An unknown error occurred');
+    }
+    throw error;
+  }
+};
+
+export const fetchCommentsCount = async (role: string, offerId: number, setError: (error: string) => void) => {
+  try {
+    const response = await axios.get(`${API_URL}/offers/${offerId}/comments`, {
+      headers: {
+        Authorization: role,
+      },
+    });
+    return Array.isArray(response.data.comments) ? response.data.comments.length : 0;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      setError(error.response.data.error);
+    } else if (error instanceof Error) {
+      setError('Error fetching comments count: ' + error.message);
+    } else {
+      setError('Error fetching comments count: An unknown error occurred');
     }
     throw error;
   }

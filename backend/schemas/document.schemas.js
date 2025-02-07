@@ -61,8 +61,13 @@ const getDocumentsByOfferIdOptions = {
         },
         response: {
             200: {
-                type: "array",
-                items: { $ref: "documentSchema#" },
+                type: "object",
+                properties: {
+                    documents: {
+                        type: "array",
+                        items: { $ref: "documentSchema#" },
+                    },
+                },
             },
         },
     },
@@ -73,10 +78,9 @@ const createDocumentOptions = {
         headers: {
             type: "object",
             properties: {
-                offer_id: { type: "integer" },
                 uploaded_by: { type: "string" },
             },
-            required: ["offer_id", "uploaded_by"],
+            required: ["uploaded_by"],
         },
         response: {
             201: {

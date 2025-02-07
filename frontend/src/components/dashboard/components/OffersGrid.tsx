@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-// import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -19,6 +18,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 type Offers = {
     id: number;
     customer_id: number;
+    customer_name: string;
     title: string;
     description: string;
     price: number;
@@ -28,16 +28,17 @@ type Offers = {
     created_at: string;
     updated_at: string;
 }
-//neu
+
 type Customer = {
     id: number;
     name: string;
 }
 
-export default function MainGrid() {
+export default function OffersGrid() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newOffers, setNewOffers] = useState<Omit<Offers, 'id' | 'created_at' | 'updated_at'>>({
         customer_id: 0,
+        customer_name: '',
         title: '',
         description: '',
         price: 0,
@@ -46,21 +47,16 @@ export default function MainGrid() {
         created_by: ''
     });
     const [offers, setOffers] = useState<Offers[]>([]);
-    const [expiredOffers, setExpiredOffers] = useState<Offers[]>([]);//neu
-    const [inProgressOffers, setInProgressOffers] = useState<Offers[]>([]);
-    const [activeOffers, setActiveOffers] = useState<Offers[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>([]); //neu
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const { role } = useRole();
     const { setError } = useError();
+    const [expanded, setExpanded] = useState<string | false>('draft');
 
     useEffect(() => {
         const getOffers = async () => {
             try {
                 const data = await fetchOffers(role, setError);
-                setOffers(data.filter((offer: Offers) => offer.status !== 'on_ice' && offer.status !== 'in_progress' && offer.status !== 'active'));
-                setExpiredOffers(data.filter((offer: Offers) => offer.status === 'on_ice'));
-                setInProgressOffers(data.filter((offer: Offers) => offer.status === 'in_progress'));
-                setActiveOffers(data.filter((offer: Offers) => offer.status === 'active'));
+                setOffers(data);
             } catch (error) {
                 console.error('Error fetching offers:', error);
             }
@@ -72,22 +68,19 @@ export default function MainGrid() {
             } catch (error) {
                 console.error('Error fetching customers:', error);
             }
-        };//neu
+        };
 
         getOffers();
-        getCustomers(); //neu
+        getCustomers();
     }, [role, setError]);
 
-    
     const handleAdd = async () => {
         try {
             await createOffer(role, newOffers, setError);
             setIsAddModalOpen(false);
-            setNewOffers({ customer_id: 0, title: '', description: '', price: 0, currency: '', status: '', created_by: '' }); // Reset new customer fields
-            // Fetch Offers again to update the list
+            setNewOffers({ customer_id: 0, customer_name: '', title: '', description: '', price: 0, currency: '', status: '', created_by: '' });
             const data = await fetchOffers(role, setError);
-            setOffers(data.filter((offer: Offers) => offer.status !== 'on_ice'));
-            setExpiredOffers(data.filter((offer: Offers) => offer.status === 'on_ice'));
+            setOffers(data);
         } catch (error) {
             console.error('Error creating offer:', error);
         }
@@ -98,39 +91,52 @@ export default function MainGrid() {
         setNewOffers((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleAccordionChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+        setExpanded(isExpanded ? panel : false);
+    };
+
     return (
         <Box sx={{ width: '100%', maxWith: { sm: '100%', md: '1700px'}, p: 2 }}>
-            <Typography component={'h2'} variant={'h6'} sx={{ mb: 2 }}>
-                Offers
-            </Typography>
-            <OffersList offers={offers} setOffers={setOffers} expiredOffers={expiredOffers} setExpiredOffers={setExpiredOffers} />
-            <Accordion>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography component={'h2'} variant={'h6'} sx={{ flexGrow: 1, textAlign: 'center' }}>
+                    Offers
+                </Typography>
+                <Button variant="contained" color='primary' onClick={() => setIsAddModalOpen(true)} sx={{ ml: 'auto' }}>
+                    Add Offer
+                </Button>
+            </Box>
+            <Accordion expanded={expanded === 'draft'} onChange={handleAccordionChange('draft')}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Offers on ice</Typography>
+                    <Typography>Offers on Draft</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-            <OffersList offers={expiredOffers} setOffers={setOffers} expiredOffers={expiredOffers} setExpiredOffers={setExpiredOffers} />
+                    <OffersList offers={offers.filter((offer) => offer.status === 'draft')} setOffers={setOffers} />
                 </AccordionDetails>
             </Accordion>
-            <Accordion>
+            <Accordion expanded={expanded === 'on_ice'} onChange={handleAccordionChange('on_ice')}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Offers on Ice</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <OffersList offers={offers.filter((offer) => offer.status === 'on_ice')} setOffers={setOffers} />
+                </AccordionDetails>
+            </Accordion>
+            <Accordion expanded={expanded === 'in_progress'} onChange={handleAccordionChange('in_progress')}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>Offers in Progress</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <OffersList offers={inProgressOffers} setOffers={setOffers} expiredOffers={expiredOffers} setExpiredOffers={setExpiredOffers} />
+                    <OffersList offers={offers.filter((offer) => offer.status === 'in_progress')} setOffers={setOffers} />
                 </AccordionDetails>
             </Accordion>
-            <Accordion>
+            <Accordion expanded={expanded === 'active'} onChange={handleAccordionChange('active')}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>Active Offers</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <OffersList offers={activeOffers} setOffers={setOffers} expiredOffers={expiredOffers} setExpiredOffers={setExpiredOffers} />
+                    <OffersList offers={offers.filter((offer) => offer.status === 'active')} setOffers={setOffers} />
                 </AccordionDetails>
             </Accordion>
-            <Button variant="contained" color='primary' onClick={() => setIsAddModalOpen(true)} sx={{ mt: 2 }}>
-                Add Offer
-            </Button>
             <Modal open={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
                 <Box sx={{ ...modalStyle }}>  
                     <Typography variant="h6" component="h2">
@@ -158,7 +164,7 @@ export default function MainGrid() {
                                 {customer.name}
                             </MenuItem>
                         ))}
-                    </TextField>//neu
+                    </TextField>
                     <TextField
                         label="Title"
                         name="title"
@@ -232,7 +238,6 @@ export default function MainGrid() {
     );
 }
 
-
 const modalStyle = {
     position: 'absolute',
     top: '50%',
@@ -243,5 +248,3 @@ const modalStyle = {
     boxShadow: 24,
     p: 4,
 };
-
-           

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { fetchOffers, updateOffer } from '../../../services/api';
+import { updateOffer, fetchOffers, fetchDocumentsCount, fetchCommentsCount } from '../../../services/api';
 import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
 import { IconButton, Modal, Box, TextField, Button, Typography, MenuItem } from '@mui/material';
@@ -9,6 +9,7 @@ import SearchIcon from '@mui/icons-material/Search';
 type Offers = {
     id: number;
     customer_id: number;
+    customer_name: string;
     title: string;
     description: string;
     price: number;
@@ -17,34 +18,39 @@ type Offers = {
     created_by: string;
     created_at: string;
     updated_at: string;
+    documentsCount?: number;
+    commentsCount?: number;
 }
 
 type OffersListProps = {
     offers: Offers[];
     setOffers: React.Dispatch<React.SetStateAction<Offers[]>>;
-    expiredOffers: Offers[];
-        setExpiredOffers: React.Dispatch<React.SetStateAction<Offers[]>>;
 };
 
-const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOffers }) => {
+const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
     const [selectedOffer, setSelectedOffer] = useState<Offers | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const { role } = useRole();
     const { setError } = useError();
 
     useEffect(() => {
-        const getOffers = async () => {
+        const fetchInitialOffers = async () => {
             try {
                 const data = await fetchOffers(role, setError);
-                setOffers(data.filter((offer: Offers) => offer.status !== 'on_ice'));
-                setExpiredOffers(data.filter((offer: Offers) => offer.status === 'on_ice'));
+                const updatedOffers = await Promise.all(data.map(async (offer: Offers) => {
+                    const documentsCount = await fetchDocumentsCount(role, offer.id, setError);
+                    const commentsCount = await fetchCommentsCount(role, offer.id, setError);
+                    return { ...offer, documentsCount, commentsCount };
+                }));
+                setOffers(updatedOffers);
             } catch (error) {
                 console.error('Error fetching offers:', error);
+                setError(String(error));
             }
         };
 
-        getOffers();
-    }, [role, setError, setOffers, setExpiredOffers]);
+        fetchInitialOffers();
+    }, [role, setError, setOffers]);
 
     const handleInspect = (offer: Offers) => {
         setSelectedOffer(offer);
@@ -59,13 +65,18 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
                 setSelectedOffer(null);
                 // Fetch offers again to update the list
                 const data = await fetchOffers(role, setError);
-                setOffers(data.filter((offer: Offers) => offer.status !== 'on_ice'));
-                setExpiredOffers(data.filter((offer: Offers) => offer.status === 'on_ice'));
+                const updatedOffers = await Promise.all(data.map(async (offer: Offers) => {
+                    const documentsCount = await fetchDocumentsCount(role, offer.id, setError);
+                    const commentsCount = await fetchCommentsCount(role, offer.id, setError);
+                    return { ...offer, documentsCount, commentsCount };
+                }));
+                setOffers(updatedOffers);
             } catch (error) {
                 console.error('Error updating offer:', error);
+                setError(String(error));
             }
         }
-    }; 
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -73,23 +84,19 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
     }
 
     const columns: GridColDef[] = [
-        { field: 'id', headerName: 'ID', flex: 1 },
-        {field: 'customer_id', headerName: 'Customer ID', flex: 1},
-        {field: 'title', headerName: 'Title', flex: 1},
-        {field: 'description', headerName: 'Description', flex: 1},
-        {field: 'price', headerName: 'Price', flex: 1},
-        {field: 'currency', headerName: 'Currency', flex: 1},
-        {field: 'status', headerName: 'Status', flex: 1},
-        {field: 'created_by', headerName: 'Created By', flex: 1},
-        {field: 'created_at', headerName: 'Created At', flex: 1},
-        {field: 'updated_at', headerName: 'Updated At', flex: 1},
+        { field: 'id', headerName: 'Offer ID', flex: 1 },
+        { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
+        { field: 'title', headerName: 'Title', flex: 1 },
+        { field: 'status', headerName: 'Status', flex: 1 },
+        { field: 'documentsCount', headerName: 'Documents', flex: 1 },
+        { field: 'commentsCount', headerName: 'Comments', flex: 1 },
         {
             field: 'actions',
             headerName: 'Actions',
             flex: 1,
             renderCell: (params) => (
                 <div>
-                   <IconButton onClick={() => handleInspect(params.row as Offers)}>
+                    <IconButton onClick={() => handleInspect(params.row as Offers)}>
                         <SearchIcon />
                     </IconButton>
                 </div>
@@ -97,9 +104,9 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
         },
     ];
 
-    return (    
+    return (
         <div style={{ height: 600, width: '100%' }}>
-            <DataGrid rows={offers} columns={columns} pagination pageSizeOptions={[10]} getRowId={(row) => row.id}/>
+            <DataGrid rows={offers} columns={columns} pagination pageSizeOptions={[10]} getRowId={(row) => row.id} />
             <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
                 <Box sx={{ ...modalStyle }}>
                     <Typography variant="h6" component="h2">
@@ -114,13 +121,21 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
                         margin="normal"
                     />
                     <TextField
+                        name="customer_name"
+                        label="Customer Name"
+                        value={selectedOffer?.customer_name || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
                         name="title"
                         label="Title"
                         value={selectedOffer?.title || ''}
                         onChange={handleChange}
                         fullWidth
                         margin="normal"
-                    /> 
+                    />
                     <TextField
                         name="description"
                         label="Description"
@@ -138,7 +153,7 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
                         margin="normal"
                     />
                     <TextField
-                        select 
+                        select
                         label="Currency"
                         name="currency"
                         value={selectedOffer?.currency}
@@ -149,7 +164,7 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
                         <MenuItem value="USD">USD</MenuItem>
                         <MenuItem value="EUR">EUR</MenuItem>
                         <MenuItem value="GBP">GBP</MenuItem>
-                        </TextField>
+                    </TextField>
                     <TextField
                         select
                         name="status"
@@ -181,7 +196,7 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers, setExpiredOf
                         </Button>
                     </Box>
                 </Box>
-            </Modal>      
+            </Modal>
         </div>
     );
 }
@@ -196,4 +211,5 @@ const modalStyle = {
     boxShadow: 24,
     p: 4,
 };
+
 export default OffersList;
