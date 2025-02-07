@@ -75,6 +75,13 @@ const getDocumentsByOfferIdOptions = {
 
 const createDocumentOptions = {
     schema: {
+        params: {
+            type: "object",
+            properties: {
+                offerId: { type: "integer" },
+            },
+            required: ["offerId"],
+        },
         headers: {
             type: "object",
             properties: {

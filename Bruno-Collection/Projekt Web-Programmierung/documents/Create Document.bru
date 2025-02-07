@@ -5,17 +5,16 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/api/documents
+  url: http://localhost:8080/api/offers/3/documents
   body: multipartForm
   auth: none
 }
 
 headers {
-  offer_id: 1
   uploaded_by: John Doe
-  Authorization: Basic Developer
+  Authorization: Basic Account-Manager
 }
 
 body:multipart-form {
-  : @file(C:\Users\nicla\OneDrive\Desktop\Test_neu.txt)
+  : @file(C:\Users\nicla\OneDrive\Desktop\Test.txt)
 }

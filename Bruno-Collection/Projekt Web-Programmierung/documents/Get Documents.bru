@@ -5,7 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/api/documents
+  url: http://localhost:8080/api/documents?offer_id=3
   body: none
   auth: none
+}
+
+params:query {
+  offer_id: 3
+}
+
+headers {
+  Authorization: Basic Account-Manager
 }
