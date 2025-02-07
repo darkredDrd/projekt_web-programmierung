@@ -61,8 +61,13 @@ const getDocumentsByOfferIdOptions = {
         },
         response: {
             200: {
-                type: "array",
-                items: { $ref: "documentSchema#" },
+                type: "object",
+                properties: {
+                    documents: {
+                        type: "array",
+                        items: { $ref: "documentSchema#" },
+                    },
+                },
             },
         },
     },

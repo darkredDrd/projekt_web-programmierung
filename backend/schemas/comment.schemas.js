@@ -60,8 +60,13 @@ const getCommentsByOfferIdOptions = {
         },
         response: {
             200: {
-                type: "array",
-                items: { $ref: "commentSchema#" },
+                type: "object",
+                properties: {
+                    comments: {
+                        type: "array",
+                        items: { $ref: "commentSchema#" },
+                    },
+                },
             },
         },
     },

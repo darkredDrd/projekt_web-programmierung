@@ -13,7 +13,12 @@ export function checkPermission(role, operation) {
             'getCustomers', 'getCustomerById',
             'importLegacyOffer', 'generateTestData'
         ],
-        'User': ['getOffers', 'getOfferById', 'getDocuments', 'getDocumentById', 'getDocumentContent', 'getComments', 'getCommentById', 'getCustomers', 'getCustomerById']
+        'User': [
+            'getOffers', 'getOfferById', 
+            'getComments', 'getCommentById', 'getCommentsByOfferId',
+            'getDocuments', 'getDocumentById', 'getDocumentsByOfferId', 'getDocumentContent', 
+            'getCustomers', 'getCustomerById'
+        ]
     };
 
     if (role === 'Account-Manager') {

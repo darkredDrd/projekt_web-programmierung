@@ -25,7 +25,11 @@ export function getDocuments(fastify, filters = {}) {
 
     if (filters.offer_id) {
         query += " AND offer_id LIKE ?";
+<<<<<<< HEAD
         params.push(`%${filters.offer_id}%`);
+=======
+        params.push('%${filters.offer_id}%');
+>>>>>>> 2076e50dedb4087f6cad9510733582df2300e4d4
     }
 
 

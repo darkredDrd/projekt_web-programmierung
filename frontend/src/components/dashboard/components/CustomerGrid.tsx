@@ -1,15 +1,15 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
+import * as React from "react";
+import { useState, useEffect } from "react";
 // import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Modal from '@mui/material/Modal';
-import TextField from '@mui/material/TextField';
-import { useRole } from '../../../services/RoleContext';
-import { useError } from '../../../services/ErrorContext';
-import { createCustomer, fetchCustomers } from '../../../services/api';
-import CustomerList from './CustomerList';
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import { useRole } from "../../../services/RoleContext";
+import { useError } from "../../../services/ErrorContext";
+import { createCustomer, fetchCustomers } from "../../../services/api";
+import CustomerList from "./CustomerList";
 
 type Customer = {
   id: number;
@@ -23,11 +23,13 @@ type Customer = {
 
 export default function MainGrid() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
+  const [newCustomer, setNewCustomer] = useState<
+    Omit<Customer, "id" | "created_at" | "updated_at">
+  >({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
   });
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { role } = useRole();
@@ -39,7 +41,7 @@ export default function MainGrid() {
         const data = await fetchCustomers(role, setError);
         setCustomers(data);
       } catch (error) {
-        console.error('Error fetching customers:', error);
+        console.error("Error fetching customers:", error);
       }
     };
 
@@ -50,12 +52,12 @@ export default function MainGrid() {
     try {
       await createCustomer(role, newCustomer, setError);
       setIsAddModalOpen(false);
-      setNewCustomer({ name: '', email: '', phone: '', address: '' }); // Reset new customer fields
+      setNewCustomer({ name: "", email: "", phone: "", address: "" }); // Reset new customer fields
       // Fetch customers again to update the list
       const data = await fetchCustomers(role, setError);
       setCustomers(data);
     } catch (error) {
-      console.error('Error creating customer:', error);
+      console.error("Error creating customer:", error);
     }
   };
 
@@ -65,18 +67,32 @@ export default function MainGrid() {
   };
 
   return (
-    <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' }, p: 2 }}>
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-        Customers
-      </Typography>
-      {/* <Grid container spacing={2}>
-        <Grid item xs={12} lg={12}> */}
-          <CustomerList customers={customers} setCustomers={setCustomers} />
-        {/* </Grid>
-      </Grid> */}
-      <Button variant="contained" color="primary" onClick={() => setIsAddModalOpen(true)} sx={{ mt: 2 }}>
-        Add Customer
-      </Button>
+    <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" }, p: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography
+          component="h2"
+          variant="h6"
+          sx={{ flexGrow: 1, textAlign: "center" }}
+        >
+          Customers
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setIsAddModalOpen(true)}
+          sx={{ ml: "auto" }}
+        >
+          Add Customer
+        </Button>
+      </Box>
+      <CustomerList customers={customers} setCustomers={setCustomers} />
       <Modal open={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
         <Box sx={{ ...modalStyle }}>
           <Typography variant="h6" component="h2">
@@ -114,7 +130,7 @@ export default function MainGrid() {
             fullWidth
             margin="normal"
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button onClick={() => setIsAddModalOpen(false)} sx={{ mr: 2 }}>
               Cancel
             </Button>
@@ -129,12 +145,12 @@ export default function MainGrid() {
 }
 
 const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
   width: 400,
-  bgcolor: 'background.paper',
+  bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
 };
