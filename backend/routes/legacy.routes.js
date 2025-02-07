@@ -11,7 +11,7 @@ import { checkPermission } from '../authorization.js';
 async function legacyRoutes(fastify, options) {
     fastify.post("/legacy/offers", legacyOfferOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'importLegacyOffer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 

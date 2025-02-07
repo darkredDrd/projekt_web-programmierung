@@ -6,9 +6,27 @@ export function checkPermission(role, operation) {
             'createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent', 'getDocuments', 'getDocumentById', 'getDocumentsByOfferId',
             'createCustomer', 'updateCustomer', 'deleteCustomer', 'getCustomers', 'getCustomerById'
         ],
-        'Developer': ['createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent', 'importLegacyOffer', 'generateTestData'],
+        'Developer': [
+            'getOffers', 'getOfferById', 'updateOffer', 
+            'createComment', 'updateComment', 'deleteComment',
+            'createDocument', 'updateDocument', 'deleteDocument', 'getDocumentContent', 'getDocuments', 'getDocumentById', 'getDocumentsByOfferId',
+            'getCustomers', 'getCustomerById',
+            'importLegacyOffer', 'generateTestData'
+        ],
         'User': ['getOffers', 'getOfferById', 'getDocuments', 'getDocumentById', 'getDocumentContent', 'getComments', 'getCommentById', 'getCustomers', 'getCustomerById']
     };
 
-    return permissions[role] && permissions[role].includes(operation);
+    if (role === 'Account-Manager') {
+        return permissions[role].includes(operation);
+    }
+
+    if (role === 'Developer' && offerStatus === 'Draft') {
+        return permissions[role].includes(operation);
+    }
+
+    if (role === 'User' || role === 'Developer') {
+        return permissions[role].includes(operation);
+    }
+
+    return false;
 }

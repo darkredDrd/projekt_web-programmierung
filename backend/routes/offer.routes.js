@@ -30,7 +30,7 @@ import { checkPermission } from '../authorization.js';
 async function offerRoutes(fastify, options) {
     fastify.get("/offers", getOffersOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getOffers')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -48,7 +48,7 @@ async function offerRoutes(fastify, options) {
 
     fastify.get("/offers/:id", getOfferOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getOfferById')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -66,7 +66,7 @@ async function offerRoutes(fastify, options) {
 
     fastify.post("/offers", createOfferOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'createOffer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -88,21 +88,23 @@ async function offerRoutes(fastify, options) {
     });
 
     fastify.put("/offers/:id", updateOfferOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'updateOffer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+        const id = parseInt(request.params.id, 10);
+        const offer = getOfferById(fastify, id);
+
+        if (!checkPermission(request.role, 'updateOffer', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
-        const id = parseInt(request.params.id, 10);
         const offerProps = request.body;
 
         try {
-            const offer = await updateOffer(fastify, id, offerProps);
+            const updatedOffer = await updateOffer(fastify, id, offerProps);
 
-            if (!offer) {
+            if (!updatedOffer) {
                 reply.code(400).send({ error: `Offer with ID ${id} not found` });
             } else {
-                reply.code(200).send({ offer: offer });
+                reply.code(200).send({ offer: updatedOffer });
             }
         } catch (err) {
             reply.code(400).send({ error: err.message });
@@ -111,7 +113,7 @@ async function offerRoutes(fastify, options) {
 
     fastify.put("/offers/:id/status", updateOfferStatusOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'updateOfferStatus')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -133,7 +135,7 @@ async function offerRoutes(fastify, options) {
 
     fastify.delete("/offers/:id", deleteOfferOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'deleteOffer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 

@@ -19,6 +19,7 @@ import { checkPermission } from '../authorization.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getOfferById } from '../core/offers.js';
 
 // Define __filename and __dirname for ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -39,7 +40,7 @@ const __dirname = path.dirname(__filename);
 async function documentRoutes(fastify, options) {
     fastify.get("/documents", getDocumentsOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getDocuments')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -57,7 +58,7 @@ async function documentRoutes(fastify, options) {
 
     fastify.get("/documents/:id", getDocumentOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getDocumentById')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -75,7 +76,7 @@ async function documentRoutes(fastify, options) {
 
     fastify.get("/offers/:offerId/documents", getDocumentsByOfferIdOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getDocumentsByOfferId')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -93,7 +94,7 @@ async function documentRoutes(fastify, options) {
 
     fastify.get("/documents/content/:fileId", getDocumentContentOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getDocumentContent')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -117,17 +118,18 @@ async function documentRoutes(fastify, options) {
         }
     });
 
-    fastify.post("/documents", createDocumentOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'createDocument')) {
-            reply.code(403).send({ error: 'Forbidden' });
+    fastify.post("/offers/:offerId/documents", createDocumentOptions, async (request, reply) => {
+        const offer = getOfferById(fastify, parseInt(request.params.offerId, 10));
+        if (!checkPermission(request.role, 'createDocument', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
         const data = await request.file();
-        const { offer_id, uploaded_by } = request.headers;
+        const { uploaded_by } = request.headers;
         const file = data;
 
-        const documentProps = { offer_id, uploaded_by };
+        const documentProps = { offer_id: request.params.offerId, uploaded_by };
 
         try {
             const document = await createDocument(fastify, documentProps, file);
@@ -145,9 +147,10 @@ async function documentRoutes(fastify, options) {
         }
     });
 
-    fastify.put("/documents/:id", updateDocumentOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'updateDocument')) {
-            reply.code(403).send({ error: 'Forbidden' });
+    fastify.put("/offers/:offerId/documents/:id", updateDocumentOptions, async (request, reply) => {
+        const offer = getOfferById(fastify, parseInt(request.params.offerId, 10));
+        if (!checkPermission(request.role, 'updateDocument', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -174,9 +177,10 @@ async function documentRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/documents/:id", deleteDocumentOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'deleteDocument')) {
-            reply.code(403).send({ error: 'Forbidden' });
+    fastify.delete("/offers/:offerId/documents/:id", deleteDocumentOptions, async (request, reply) => {
+        const offer = getOfferById(fastify, parseInt(request.params.offerId, 10));
+        if (!checkPermission(request.role, 'deleteDocument', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 

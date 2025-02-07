@@ -27,7 +27,7 @@ import { checkPermission } from '../authorization.js';
 async function customerRoutes(fastify, options) {
     fastify.get("/customers", getCustomersOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getCustomers')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -45,7 +45,7 @@ async function customerRoutes(fastify, options) {
 
     fastify.get("/customers/:id", getCustomerOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getCustomerById')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -63,7 +63,7 @@ async function customerRoutes(fastify, options) {
 
     fastify.post("/customers", createCustomerOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'createCustomer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -100,7 +100,7 @@ async function customerRoutes(fastify, options) {
 
     fastify.put("/customers/:id", updateCustomerOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'updateCustomer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -136,7 +136,7 @@ async function customerRoutes(fastify, options) {
 
     fastify.delete("/customers/:id", deleteCustomerOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'deleteCustomer')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 

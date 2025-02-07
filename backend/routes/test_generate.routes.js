@@ -13,7 +13,7 @@ import { testGenerateOptions } from '../schemas/test_generate.schemas.js';
 async function testRoutes(fastify, options) {
     fastify.post("/test/generate", testGenerateOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'generateTestData')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 

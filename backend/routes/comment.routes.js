@@ -15,6 +15,7 @@ import {
     getCommentsByOfferIdOptions
 } from '../schemas/comment.schemas.js';
 import { checkPermission } from '../authorization.js';
+import { getOfferById } from '../core/offers.js';
 
 /**
  * Includes the routes for the '/comments' API endpoint.
@@ -30,7 +31,7 @@ import { checkPermission } from '../authorization.js';
 async function commentRoutes(fastify, options) {
     fastify.get("/comments", getCommentsOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getComments')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -48,7 +49,7 @@ async function commentRoutes(fastify, options) {
 
     fastify.get("/comments/:id", getCommentOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getCommentById')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -66,7 +67,7 @@ async function commentRoutes(fastify, options) {
 
     fastify.get("/offers/:offerId/comments", getCommentsByOfferIdOptions, async (request, reply) => {
         if (!checkPermission(request.role, 'getCommentsByOfferId')) {
-            reply.code(403).send({ error: 'Forbidden' });
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -82,9 +83,10 @@ async function commentRoutes(fastify, options) {
         return comments;
     });
 
-    fastify.post("/comments", createCommentOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'createComment')) {
-            reply.code(403).send({ error: 'Forbidden' });
+    fastify.post("/offers/:offerId/comments", createCommentOptions, async (request, reply) => {
+        const offer = getOfferById(fastify, parseInt(request.params.offerId, 10));
+        if (!checkPermission(request.role, 'createComment', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -105,9 +107,10 @@ async function commentRoutes(fastify, options) {
         }
     });
 
-    fastify.put("/comments/:id", updateCommentOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'updateComment')) {
-            reply.code(403).send({ error: 'Forbidden' });
+    fastify.put("/offers/:offerId/comments/:id", updateCommentOptions, async (request, reply) => {
+        const offer = getOfferById(fastify, parseInt(request.params.offerId, 10));
+        if (!checkPermission(request.role, 'updateComment', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
@@ -127,9 +130,10 @@ async function commentRoutes(fastify, options) {
         }
     });
 
-    fastify.delete("/comments/:id", deleteCommentOptions, async (request, reply) => {
-        if (!checkPermission(request.role, 'deleteComment')) {
-            reply.code(403).send({ error: 'Forbidden' });
+    fastify.delete("/offers/:offerId/comments/:id", deleteCommentOptions, async (request, reply) => {
+        const offer = getOfferById(fastify, parseInt(request.params.offerId, 10));
+        if (!checkPermission(request.role, 'deleteComment', offer.status)) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
             return;
         }
 
