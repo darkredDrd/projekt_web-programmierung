@@ -8,13 +8,10 @@ import Stack from '@mui/material/Stack';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 
-
-
-
 const mainListItems = [
 
-  { text: 'Customers', icon: <PeopleRoundedIcon /> },
   { text: 'Offers', icon: <AssignmentRoundedIcon /> },
+  { text: 'Customers', icon: <PeopleRoundedIcon /> },
 ];
 
 export default function MenuContent() {

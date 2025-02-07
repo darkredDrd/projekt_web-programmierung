@@ -2,7 +2,8 @@ import React from 'react';
 import { Box, Stack, CssBaseline } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import AppNavbar from './components/AppNavbar';
-import CustomerGrid from './components/CustomerGrid';
+//import CustomerGrid from './components/CustomerGrid';
+import OffersGrid from './components/OffersGrid';
 import SideMenu from './components/SideMenu';
 import AppTheme from './theme/AppTheme';
 import Header from './components/Header';
@@ -51,7 +52,8 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
                   width: '100%', // Ensure the stack takes the full width
                 }}
               >
-                <CustomerGrid />
+              
+                <OffersGrid />
               </Stack>
             </Box>
           </Box>

@@ -23,6 +23,12 @@ export function getDocuments(fastify, filters = {}) {
         params.push(`%${filters.uploaded_by}%`);
     }
 
+    if (filters.offer_id) {
+        query += " AND offer_id LIKE ?";
+        params.push('%${filters.offer_id}%');
+    }
+
+
     const statement = fastify.db.prepare(query);
 
     try {
