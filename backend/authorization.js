@@ -16,7 +16,7 @@ export function checkPermission(role, operation) {
         'User': [
             'getOffers', 'getOfferById', 
             'getComments', 'getCommentById', 'getCommentsByOfferId',
-            'getDocuments', 'getDocumentById', 'getDocumentsByOfferId', 'getDocumentContent', 
+            'getDocuments', 'getDocumentById', 'getDocumentsByOfferId', 'getDocumentContent',  
             'getCustomers', 'getCustomerById'
         ]
     };
