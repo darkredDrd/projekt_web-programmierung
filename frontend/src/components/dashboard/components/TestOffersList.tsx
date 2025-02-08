@@ -3,7 +3,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { updateOffer, fetchOffers, fetchDocumentsCount, fetchCommentsCount, fetchDocuments } from '../../../services/api';
 import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
-import { IconButton, Modal, Box, TextField, Button, Typography, MenuItem, List, ListItem, } from '@mui/material';
+import { IconButton, Modal, Box, TextField, Button, Typography, MenuItem, List, ListItem, ListItemText } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 type Offers = {
@@ -22,6 +22,12 @@ type Offers = {
     commentsCount?: number;
 }
 
+type Document = {
+    id: number;
+    name: string;
+    url: string;
+}
+
 type OffersListProps = {
     offers: Offers[];
     setOffers: React.Dispatch<React.SetStateAction<Offers[]>>;
@@ -30,6 +36,7 @@ type OffersListProps = {
 const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
     const [selectedOffer, setSelectedOffer] = useState<Offers | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [documents, setDocuments] = useState<Document[]>([]);
     const { role } = useRole();
     const { setError } = useError();
 
@@ -52,9 +59,10 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
         fetchInitialOffers();
     }, [role, setError, setOffers]);
 
-    const handleInspect = (offer: Offers) => {
+    const handleInspect = async (offer: Offers) => {
         setSelectedOffer(offer);
         setIsEditModalOpen(true);
+        
     };
 
     const handleSave = async () => {
@@ -140,19 +148,14 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
                         InputProps={{ readOnly: true }}
                     />
                     <TextField
-                        select
                         name="status"
                         label="Status"
                         value={selectedOffer?.status || ''}
                         onChange={handleChange}
                         fullWidth
                         margin="normal"
-                    >
-                        <MenuItem value="draft">Draft</MenuItem>
-                        <MenuItem value="in_progress">In Progress</MenuItem>
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="on_ice">On Ice</MenuItem>
-                    </TextField>
+                        InputProps={{ readOnly: true }}
+                    />
                     <TextField
                         name="documentsCount"
                         label="Documents"
@@ -171,20 +174,26 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
                         margin="normal"
                         InputProps={{ readOnly: true }}
                     />
+                    <Typography variant="h6" component="h3" sx={{ mt: 2 }}>
+                        Documents
+                    </Typography>
+                    <List>
+                        {documents.map((doc) => (
+                            <ListItem key={doc.id}>
+                                <ListItemText primary={doc.name} secondary={doc.url} />
+                            </ListItem>
+                        ))}
+                    </List>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                         <Button onClick={() => setIsEditModalOpen(false)} sx={{ mr: 2 }}>
                             Close
-                        </Button>
-                        <Button variant="contained" onClick={handleSave}>
-                            Save
                         </Button>
                     </Box>
                 </Box>
             </Modal>
         </div>
-        );
-    
-    };
+    );
+};
 
 const modalStyle = {
     position: 'absolute',

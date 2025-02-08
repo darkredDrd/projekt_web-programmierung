@@ -219,6 +219,21 @@ export const fetchDocumentsCount = async (role: string, offerId: number, setErro
   }
 };
 
+export const fetchDocuments = async (role: string, offerId: number, setError: (error: string) => void) => {
+  try {
+      const response = await axios.get(`/api/offers/${offerId}/documents`, {
+          headers: {
+              'Authorization': `Bearer ${role}`
+          }
+      });
+      return response.data;
+  } catch (error) {
+      console.error('Error fetching documents:', error);
+      setError(String(error));
+      return [];
+  }
+};
+
 export const fetchCommentsCount = async (role: string, offerId: number, setError: (error: string) => void) => {
   try {
     const response = await axios.get(`${API_URL}/offers/${offerId}/comments`, {

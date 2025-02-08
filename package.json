@@ -3,6 +3,8 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "dependencies": {
-    "react-router-dom": "^7.1.5"
+    "@types/react-router-dom": "^5.3.3",
+    "react-router-dom": "^7.1.5",
+    "save-dev": "^0.0.1-security"
   }
 }
