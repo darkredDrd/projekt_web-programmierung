@@ -8,7 +8,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
-import { createOffer, fetchOffers, fetchCustomers } from '../../../services/api';
+import { createOffer, fetchOffers, fetchCustomers, fetchDocuments, uploadDocument, fetchComments, addComment, updateOfferStatus } from '../../../services/api';
 import OffersList from './OffersList';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -27,11 +27,26 @@ type Offers = {
     created_by: string;
     created_at: string;
     updated_at: string;
+    document_count: number; // Neue Felder hinzugefügt
+    comment_count: number;  // Neue Felder hinzugefügt
 }
 
 type Customer = {
     id: number;
     name: string;
+}
+
+type Document = {
+    id: number;
+    filename: string;
+    file_url: string;
+}
+
+type Comment = {
+    id: number;
+    author: string;
+    content: string;
+    created_at: string;
 }
 
 export default function OffersGrid() {
@@ -44,7 +59,9 @@ export default function OffersGrid() {
         price: 0,
         currency: '',
         status: '',
-        created_by: ''
+        created_by: '',
+        document_count: 0,
+        comment_count: 0
     });
     const [offers, setOffers] = useState<Offers[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -52,6 +69,9 @@ export default function OffersGrid() {
     const { setError } = useError();
     const [expanded, setExpanded] = useState<string | false>('draft');
     const [selectedOffer, setSelectedOffer] = useState<Offers | null>(null);
+    const [documents, setDocuments] = useState<Document[]>([]);
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState('');
 
     useEffect(() => {
         const getOffers = async () => {
@@ -75,11 +95,36 @@ export default function OffersGrid() {
         getCustomers();
     }, [role, setError]);
 
+    useEffect(() => {
+        if (selectedOffer) {
+            const getDocuments = async () => {
+                try {
+                    const data = await fetchDocuments(role, selectedOffer.id, setError);
+                    setDocuments(Array.isArray(data) ? data : []);
+                } catch (error) {
+                    console.error('Error fetching documents:', error);
+                }
+            };
+
+            const getComments = async () => {
+                try {
+                    const data = await fetchComments(role, selectedOffer.id, setError);
+                    setComments(Array.isArray(data) ? data : []);
+                } catch (error) {
+                    console.error('Error fetching comments:', error);
+                }
+            };
+
+            getDocuments();
+            getComments();
+        }
+    }, [selectedOffer, role, setError]);
+
     const handleAdd = async () => {
         try {
             await createOffer(role, newOffers, setError);
             setIsAddModalOpen(false);
-            setNewOffers({ customer_id: 0, customer_name: '', title: '', description: '', price: 0, currency: '', status: '', created_by: '' });
+            setNewOffers({ customer_id: 0, customer_name: '', title: '', description: '', price: 0, currency: '', status: '', created_by: '', document_count: 0, comment_count: 0 });
             const data = await fetchOffers(role, setError);
             setOffers(data);
             const newOffer = data.find(offer => offer.title === newOffers.title && offer.description === newOffers.description);
@@ -90,7 +135,6 @@ export default function OffersGrid() {
             console.error('Error creating offer:', error);
         }
     };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setNewOffers((prev) => ({ ...prev, [name]: value }));
@@ -102,6 +146,44 @@ export default function OffersGrid() {
 
     const handleCloseDetailModal = () => {
         setSelectedOffer(null);
+    };
+
+    const handleUploadDocument = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && selectedOffer) {
+            const file = event.target.files[0];
+            try {
+                await uploadDocument(role, selectedOffer.id, file, setError);
+                const data = await fetchDocuments(role, selectedOffer.id, setError);
+                setDocuments(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('Error uploading document:', error);
+            }
+        }
+    };
+
+    const handleAddComment = async () => {
+        if (selectedOffer && newComment) {
+            try {
+                await createComment(role, selectedOffer.id, role, newComment, setError);
+                const data = await fetchComments(role, selectedOffer.id, setError);
+                setComments(Array.isArray(data) ? data : []);
+                setNewComment('');
+            } catch (error) {
+                console.error('Error adding comment:', error);
+            }
+        }
+    };
+
+    const handleStatusChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (selectedOffer) {
+            const newStatus = event.target.value;
+            try {
+                await updateOfferStatus(role, selectedOffer.id, newStatus, setError);
+                setSelectedOffer({ ...selectedOffer, status: newStatus });
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
     };
 
     return (
@@ -249,20 +331,54 @@ export default function OffersGrid() {
                         <Typography variant="h6" component="h2">
                             Offer Details
                         </Typography>
-                        <Typography>ID: {selectedOffer.id}</Typography>
                         <Typography>Customer ID: {selectedOffer.customer_id}</Typography>
                         <Typography>Customer Name: {selectedOffer.customer_name}</Typography>
-                        <Typography>Title: {selectedOffer.title}</Typography>
-                        <Typography>Description: {selectedOffer.description}</Typography>
-                        <Typography>Price: {selectedOffer.price}</Typography>
-                        <Typography>Currency: {selectedOffer.currency}</Typography>
-                        <Typography>Status: {selectedOffer.status}</Typography>
-                        <Typography>Created By: {selectedOffer.created_by}</Typography>
-                        <Typography>Created At: {selectedOffer.created_at}</Typography>
-                        <Typography>Updated At: {selectedOffer.updated_at}</Typography>
+                        <TextField
+                            select
+                            label="Status"
+                            value={selectedOffer.status}
+                            onChange={handleStatusChange}
+                            fullWidth
+                            margin='normal'
+                        >
+                            <MenuItem value="draft">Draft</MenuItem>
+                            <MenuItem value="in_progress">In Progress</MenuItem>
+                            <MenuItem value="active">Active</MenuItem>
+                            <MenuItem value="on_ice">On Ice</MenuItem>
+                        </TextField>
+                        <Typography>Document Count: {selectedOffer.document_count}</Typography>
+                        <Typography>Comment Count: {selectedOffer.comment_count}</Typography>
+                        <Box>
+                            <Typography variant="h6">Documents</Typography>
+                            <input type="file" onChange={handleUploadDocument} />
+                            <ul>
+                                {Array.isArray(documents) && documents.map((doc) => (
+                                    <li key={doc.id}><a href={doc.file_url} target="_blank" rel="noopener noreferrer">{doc.filename}</a></li>
+                                ))}
+                            </ul>
+                        </Box>
+                        <Box>
+                            <Typography variant="h6">Comments</Typography>
+                            <TextField
+                                label="Add Comment"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                fullWidth
+                                margin='normal'
+                            />
+                            <Button onClick={handleAddComment} variant="contained">Add Comment</Button>
+                            <ul>
+                                {Array.isArray(comments) && comments.map((comment) => (
+                                    <li key={comment.id}>{comment.content} - <i>{comment.author}</i></li>
+                                ))}
+                            </ul>
+                        </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                             <Button onClick={handleCloseDetailModal} sx={{ mr: 2 }}>
                                 Close
+                            </Button>
+                            <Button variant="contained" onClick={() => { /* Save functionality here */ }}>
+                                Save
                             </Button>
                         </Box>
                     </Box>

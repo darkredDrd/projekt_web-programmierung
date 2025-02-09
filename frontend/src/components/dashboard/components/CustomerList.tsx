@@ -6,6 +6,7 @@ import { useError } from '../../../services/ErrorContext';
 import { IconButton, Modal, Box, TextField, Button, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useNavigate } from 'react-router-dom';
 
 type Customer = {
   id: number;
@@ -27,6 +28,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { role } = useRole();
   const { setError } = useError();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getCustomers = async () => {
@@ -101,6 +103,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
 
   return (
     <div style={{ height: 600, width: '100%' }}>
+      
       <DataGrid rows={customers} columns={columns} pagination pageSizeOptions={[10]} getRowId={(row) => row.id} />
       <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
         <Box sx={{ ...modalStyle }}>

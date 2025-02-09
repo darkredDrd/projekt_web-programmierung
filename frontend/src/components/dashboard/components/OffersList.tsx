@@ -5,6 +5,7 @@ import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
 import { IconButton, Modal, Box, TextField, Button, Typography, MenuItem, List, ListItem, } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
 
 type Offers = {
     id: number;
@@ -28,10 +29,14 @@ type OffersListProps = {
 };
 
 const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
+    const navigate = useNavigate();
     const [selectedOffer, setSelectedOffer] = useState<Offers | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const { role } = useRole();
     const { setError } = useError();
+    const [documents, setDocuments] = useState([]);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
 
     useEffect(() => {
         const fetchInitialOffers = async () => {
@@ -53,8 +58,7 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
     }, [role, setError, setOffers]);
 
     const handleInspect = (offer: Offers) => {
-        setSelectedOffer(offer);
-        setIsEditModalOpen(true);
+        navigate(`/offer-details/${offer.id}`);
     };
 
     const handleSave = async () => {
@@ -83,6 +87,24 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
         setSelectedOffer((prev) => (prev ? { ...prev, [name]: value } : null));
     }
 
+    const handleStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = e.target;
+        setSelectedOffer((prev) => (prev ? { ...prev, status: value } : null));
+    }
+
+    const handleUploadDocument = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Implement document upload logic here
+    }
+
+    const handleAddComment = async () => {
+        // Implement add comment logic here
+    }
+
+    const handleCloseDetailModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedOffer(null);
+    }
+
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'Offer ID', flex: 1 },
         { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
@@ -107,84 +129,68 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
     return (
         <div style={{ height: 600, width: '100%' }}>
             <DataGrid rows={offers} columns={columns} pagination pageSizeOptions={[10]} getRowId={(row) => row.id} />
-            <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-                <Box sx={{ ...modalStyle, width: '80%', height: '80%' }}>
-                    <Typography variant="h6" component="h2">
-                        Inspect Offer
-                    </Typography>
-                    <TextField
-                        name="id"
-                        label="Offer ID"
-                        value={selectedOffer?.id || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        InputProps={{ readOnly: true }}
-                    />
-                    <TextField
-                        name="customer_name"
-                        label="Customer Name"
-                        value={selectedOffer?.customer_name || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        InputProps={{ readOnly: true }}
-                    />
-                    <TextField
-                        name="title"
-                        label="Title"
-                        value={selectedOffer?.title || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        InputProps={{ readOnly: true }}
-                    />
-                    <TextField
-                        select
-                        name="status"
-                        label="Status"
-                        value={selectedOffer?.status || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                    >
-                        <MenuItem value="draft">Draft</MenuItem>
-                        <MenuItem value="in_progress">In Progress</MenuItem>
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="on_ice">On Ice</MenuItem>
-                    </TextField>
-                    <TextField
-                        name="documentsCount"
-                        label="Documents"
-                        value={selectedOffer?.documentsCount || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        InputProps={{ readOnly: true }}
-                    />
-                    <TextField
-                        name="commentsCount"
-                        label="Comments"
-                        value={selectedOffer?.commentsCount || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        InputProps={{ readOnly: true }}
-                    />
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button onClick={() => setIsEditModalOpen(false)} sx={{ mr: 2 }}>
-                            Close
-                        </Button>
-                        <Button variant="contained" onClick={handleSave}>
-                            Save
-                        </Button>
+            {selectedOffer && (
+                <Modal open={!!selectedOffer} onClose={handleCloseDetailModal}>
+                    <Box sx={{ ...modalStyle }}>
+                        <Typography variant="h6" component="h2">
+                            Offer Details
+                        </Typography>
+                        <Typography>Customer ID: {selectedOffer.customer_id}</Typography>
+                        <Typography>Customer Name: {selectedOffer.customer_name}</Typography>
+                        <TextField
+                            select
+                            label="Status"
+                            value={selectedOffer.status}
+                            onChange={handleStatusChange}
+                            fullWidth
+                            margin='normal'
+                        >
+                            <MenuItem value="draft">Draft</MenuItem>
+                            <MenuItem value="in_progress">In Progress</MenuItem>
+                            <MenuItem value="active">Active</MenuItem>
+                            <MenuItem value="on_ice">On Ice</MenuItem>
+                        </TextField>
+                        <Typography>Document Count: {selectedOffer.documentsCount}</Typography>
+                        <Typography>Comment Count: {selectedOffer.commentsCount}</Typography>
+                        <Box>
+                            <Typography variant="h6">Documents</Typography>
+                            <input type="file" onChange={handleUploadDocument} />
+                            <ul>
+                                {Array.isArray(documents) && documents.map((doc) => (
+                                    <li key={doc.id}><a href={doc.file_url} target="_blank" rel="noopener noreferrer">{doc.filename}</a></li>
+                                ))}
+                            </ul>
+                        </Box>
+                        <Box>
+                            <Typography variant="h6">Comments</Typography>
+                            <TextField
+                                label="Add Comment"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                fullWidth
+                                margin='normal'
+                            />
+                            <Button onClick={handleAddComment} variant="contained">Add Comment</Button>
+                            <ul>
+                                {Array.isArray(comments) && comments.map((comment) => (
+                                    <li key={comment.id}>{comment.content} - <i>{comment.author}</i></li>
+                                ))}
+                            </ul>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button onClick={handleCloseDetailModal} sx={{ mr: 2 }}>
+                                Close
+                            </Button>
+                            <Button variant="contained" onClick={handleSave}>
+                                Save
+                            </Button>
+                        </Box>
                     </Box>
-                </Box>
-            </Modal>
+                </Modal>
+            )}
         </div>
-        );
-    
-    };
+    );
+};
 
 const modalStyle = {
     position: 'absolute',

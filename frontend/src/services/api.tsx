@@ -89,6 +89,26 @@ export const createCustomer = async (role: string, data: CustomerSchema, setErro
   }
 }
 
+export const addCustomer = async (role: string, customer: Customer, setError: (error: string) => void) => {
+  try {
+    const response = await fetch('/api/customers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${role}`,
+      },
+      body: JSON.stringify(customer),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add customer');
+    }
+    return await response.json();
+  } catch (error) {
+    setError(error.message);
+    throw error;
+  }
+};
+
 export const fetchOffers = async (role: string, setError: (error: string) => void) => {
   try {
     const response = await axios.get(`${API_URL}/offers`, {
@@ -179,6 +199,8 @@ export const createOffer = async (role: string, data: OffersSchema, setError: (e
   }
 }
 
+// Removed duplicate fetchOfferById function
+
 export const getDocuments = async (role: string, setError: (error: string) => void) => {
   try {
     const response = await axios.get(`${API_URL}/documents`, {
@@ -194,6 +216,30 @@ export const getDocuments = async (role: string, setError: (error: string) => vo
       setError('Error fetching documents: ' + error.message);
     } else {
       setError('Error fetching documents: An unknown error occurred');
+    }
+    throw error;
+  }
+};
+
+export const uploadDocument = async (role: string, offerId: number, file: File, setError: (error: string) => void) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await axios.post(`${API_URL}/offers/${offerId}/documents`, formData, {
+      headers: {
+        Authorization: role,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      setError(error.response.data.error);
+    } else if (error instanceof Error) {
+      setError('Error uploading document: ' + error.message);
+    } else {
+      setError('Error uploading document: An unknown error occurred');
     }
     throw error;
   }
@@ -221,9 +267,9 @@ export const fetchDocumentsCount = async (role: string, offerId: number, setErro
 
 export const fetchDocuments = async (role: string, offerId: number, setError: (error: string) => void) => {
   try {
-      const response = await axios.get(`/api/offers/${offerId}/documents`, {
+      const response = await axios.get(`${API_URL}/offers/${offerId}/documents`, {
           headers: {
-              'Authorization': `Bearer ${role}`
+            Authorization: role
           }
       });
       return response.data;
@@ -251,5 +297,103 @@ export const fetchCommentsCount = async (role: string, offerId: number, setError
       setError('Error fetching comments count: An unknown error occurred');
     }
     throw error;
+  }
+};
+
+export const fetchComments = async (role: string, offerId: number, setError: (error: string) => void) => {
+  try {
+    const response = await axios.get(`${API_URL}/offers/${offerId}/comments`, {
+      headers: {
+        Authorization: role,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      setError(error.response.data.error);
+    } else if (error instanceof Error) {
+      setError('Error fetching comments: ' + error.message);
+    } else {
+      setError('Error fetching comments: An unknown error occurred');
+    }
+    throw error;
+  }
+};
+
+export const addComment = async (role: string, offerId: number, author: string, content: string, setError: (error: string) => void) => {
+  try {
+      const response = await fetch(`/api/offers/${offerId}/comments`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${role}`
+          },
+          body: JSON.stringify({ author, content })
+      });
+      if (!response.ok) {
+          throw new Error('Failed to add comment');
+      }
+      return await response.json();
+  } catch (error) {
+      setError(error.message);
+      throw error;
+  }
+};
+
+export const createComment = async (role: string, offerId: number, author: string, content: string, setError: (error: string) => void) => {
+    try {
+        const response = await fetch(`/api/offers/${offerId}/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${role}`,
+            },
+            body: JSON.stringify({ author, content }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to create comment');
+        }
+        return await response.json();
+    } catch (error) {
+        setError(String(error));
+        throw error;
+    }
+};
+
+export const updateOfferStatus = async (role: string, offerId: number, status: string, setError: (error: string) => void) => {
+  try {
+    const response = await axios.put(`${API_URL}/offers/${offerId}/status`, { status }, {
+      headers: {
+        Authorization: role,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      setError(error.response.data.error);
+    } else if (error instanceof Error) {
+      setError('Error updating offer status: ' + error.message);
+    } else {
+      setError('Error updating offer status: An unknown error occurred');
+    }
+    throw error;
+  }
+};
+
+export const fetchOfferById = async (role: string, id: string, setError: (error: string) => void) => {
+  try {
+      const response = await fetch(`${API_URL}offers/${id}`, {
+          headers: {
+              Authorization: role,
+          },
+      });
+      if (!response.ok) {
+          throw new Error('Failed to fetch offer');
+      }
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      setError(String(error));
+      throw error;
   }
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Stack, CssBaseline } from '@mui/material';
+import { Box, Stack, CssBaseline, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import AppNavbar from './components/AppNavbar';
 import CustomerGrid from './components/CustomerGrid';
@@ -58,6 +58,18 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
                   <Route path="/customers" element={<CustomerGrid />} />
                 </Routes>
               </Stack>
+            </Box>
+            {/* Footer */}
+            <Box
+              component="footer"
+              sx={{
+                backgroundColor: 'grey',
+                color: 'white',
+                textAlign: 'center',
+                py: 2,
+              }}
+            >
+              <Typography variant="body2">Made by Niclas Schmidt und Timo Haberkorn</Typography>
             </Box>
           </Box>
         </Box>

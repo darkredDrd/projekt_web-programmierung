@@ -10,6 +10,7 @@ import { useRole } from "../../../services/RoleContext";
 import { useError } from "../../../services/ErrorContext";
 import { createCustomer, fetchCustomers } from "../../../services/api";
 import CustomerList from "./CustomerList";
+import { useNavigate } from "react-router-dom";
 
 type Customer = {
   id: number;
@@ -32,6 +33,7 @@ export default function MainGrid() {
     address: "",
   });
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const navigate = useNavigate();
   const { role } = useRole();
   const { setError } = useError();
 
@@ -66,6 +68,9 @@ export default function MainGrid() {
     setNewCustomer((prev) => ({ ...prev, [name]: value }));
   };
 
+  
+
+
   return (
     <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" }, p: 2 }}>
       <Box
@@ -86,7 +91,7 @@ export default function MainGrid() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => navigate('/add-customer')} 
           sx={{ ml: "auto" }}
         >
           Add Customer
