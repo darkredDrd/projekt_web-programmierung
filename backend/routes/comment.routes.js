@@ -80,7 +80,7 @@ async function commentRoutes(fastify, options) {
         }
 
         reply.code(200);
-        return comments;
+        return { comments: comments };
     });
 
     fastify.post("/offers/:offerId/comments", createCommentOptions, async (request, reply) => {

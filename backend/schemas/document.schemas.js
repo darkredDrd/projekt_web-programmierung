@@ -109,10 +109,10 @@ const updateDocumentOptions = {
             },
             required: ["id"],
         },
-        body: {
+        headers: {
             type: "object",
             properties: {
-                uploaded_by: { type: "string" }
+                uploaded_by: { type: "string" },
             },
         },
         response: {

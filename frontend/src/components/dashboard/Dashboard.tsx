@@ -2,12 +2,10 @@ import React from 'react';
 import { Box, Stack, CssBaseline, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import AppNavbar from './components/AppNavbar';
-import CustomerGrid from './components/CustomerGrid';
-import OffersGrid from './components/OffersGrid';
 import SideMenu from './components/SideMenu';
 import AppTheme from './theme/AppTheme';
 import Header from './components/Header';
-import { Routes, Route } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import {
   chartsCustomizations,
   dataGridCustomizations,
@@ -53,10 +51,7 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
                   width: '100%', // Ensure the stack takes the full width
                 }}
               >
-                <Routes>
-                  <Route path="/offers" element={<OffersGrid />} />
-                  <Route path="/customers" element={<CustomerGrid />} />
-                </Routes>
+                <Outlet />
               </Stack>
             </Box>
             {/* Footer */}

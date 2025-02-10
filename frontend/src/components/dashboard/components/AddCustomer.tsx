@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { addCustomer } from '../../../services/api';
+import { createCustomer } from '../../../services/api';
 import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
 
@@ -18,7 +18,7 @@ const AddCustomer: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      await addCustomer(role, customer, setError);
+      await createCustomer(role, customer, setError);
       navigate('/customers'); // Navigate back to the customer list
     } catch (error) {
       console.error('Error adding customer:', error);

@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { updateOffer, fetchOffers, fetchDocumentsCount, fetchCommentsCount, fetchDocuments } from '../../../services/api';
+import { updateOffer, fetchOffers, fetchDocumentsCount, fetchCommentsCount, fetchCustomers } from '../../../services/api';
 import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
-import { IconButton, Modal, Box, TextField, Button, Typography, MenuItem, List, ListItem, } from '@mui/material';
+import { IconButton, Modal, Box, TextField, Button, Typography, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
+
+type Customer = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    created_at: string;
+    updated_at: string;
+};
 
 type Offers = {
     id: number;
@@ -19,8 +29,8 @@ type Offers = {
     created_by: string;
     created_at: string;
     updated_at: string;
-    documentsCount?: number;
-    commentsCount?: number;
+    document_count: number;
+    comment_count: number;
 }
 
 type OffersListProps = {
@@ -29,32 +39,34 @@ type OffersListProps = {
 };
 
 const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
-    const navigate = useNavigate();
     const [selectedOffer, setSelectedOffer] = useState<Offers | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const { role } = useRole();
     const { setError } = useError();
-    const [documents, setDocuments] = useState([]);
-    const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchInitialOffers = async () => {
+        const fetchInitialData = async () => {
             try {
-                const data = await fetchOffers(role, setError);
-                const updatedOffers = await Promise.all(data.map(async (offer: Offers) => {
+                const customersData = await fetchCustomers(role, setError);
+                setCustomers(customersData);
+
+                const offersData = await fetchOffers(role, setError);
+                const updatedOffers = await Promise.all(offersData.map(async (offer: Offers) => {
                     const documentsCount = await fetchDocumentsCount(role, offer.id, setError);
                     const commentsCount = await fetchCommentsCount(role, offer.id, setError);
-                    return { ...offer, documentsCount, commentsCount };
+                    const customer = customersData.find((customer: Customer) => customer.id === offer.customer_id);
+                    return { ...offer, document_count: documentsCount, comment_count: commentsCount, customer_name: customer ? customer.name : 'Unknown' };
                 }));
                 setOffers(updatedOffers);
             } catch (error) {
-                console.error('Error fetching offers:', error);
+                console.error('Error fetching data:', error);
                 setError(String(error));
             }
         };
 
-        fetchInitialOffers();
+        fetchInitialData();
     }, [role, setError, setOffers]);
 
     const handleInspect = (offer: Offers) => {
@@ -68,11 +80,12 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
                 setIsEditModalOpen(false);
                 setSelectedOffer(null);
                 // Fetch offers again to update the list
-                const data = await fetchOffers(role, setError);
-                const updatedOffers = await Promise.all(data.map(async (offer: Offers) => {
+                const offersData = await fetchOffers(role, setError);
+                const updatedOffers = await Promise.all(offersData.map(async (offer: Offers) => {
                     const documentsCount = await fetchDocumentsCount(role, offer.id, setError);
                     const commentsCount = await fetchCommentsCount(role, offer.id, setError);
-                    return { ...offer, documentsCount, commentsCount };
+                    const customer = customers.find((customer: Customer) => customer.id === offer.customer_id);
+                    return { ...offer, document_count: documentsCount, comment_count: commentsCount, customer_name: customer ? customer.name : 'Unknown' };
                 }));
                 setOffers(updatedOffers);
             } catch (error) {
@@ -87,31 +100,13 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
         setSelectedOffer((prev) => (prev ? { ...prev, [name]: value } : null));
     }
 
-    const handleStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { value } = e.target;
-        setSelectedOffer((prev) => (prev ? { ...prev, status: value } : null));
-    }
-
-    const handleUploadDocument = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Implement document upload logic here
-    }
-
-    const handleAddComment = async () => {
-        // Implement add comment logic here
-    }
-
-    const handleCloseDetailModal = () => {
-        setIsEditModalOpen(false);
-        setSelectedOffer(null);
-    }
-
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'Offer ID', flex: 1 },
         { field: 'customer_name', headerName: 'Customer Name', flex: 1 },
         { field: 'title', headerName: 'Title', flex: 1 },
         { field: 'status', headerName: 'Status', flex: 1 },
-        { field: 'documentsCount', headerName: 'Documents', flex: 1 },
-        { field: 'commentsCount', headerName: 'Comments', flex: 1 },
+        { field: 'document_count', headerName: 'Documents', flex: 1 },
+        { field: 'comment_count', headerName: 'Comments', flex: 1 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -125,72 +120,103 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
             ),
         },
     ];
-    
+
     return (
         <div style={{ height: 600, width: '100%' }}>
             <DataGrid rows={offers} columns={columns} pagination pageSizeOptions={[10]} getRowId={(row) => row.id} />
-            {selectedOffer && (
-                <Modal open={!!selectedOffer} onClose={handleCloseDetailModal}>
-                    <Box sx={{ ...modalStyle }}>
-                        <Typography variant="h6" component="h2">
-                            Offer Details
-                        </Typography>
-                        <Typography>Customer ID: {selectedOffer.customer_id}</Typography>
-                        <Typography>Customer Name: {selectedOffer.customer_name}</Typography>
-                        <TextField
-                            select
-                            label="Status"
-                            value={selectedOffer.status}
-                            onChange={handleStatusChange}
-                            fullWidth
-                            margin='normal'
-                        >
-                            <MenuItem value="draft">Draft</MenuItem>
-                            <MenuItem value="in_progress">In Progress</MenuItem>
-                            <MenuItem value="active">Active</MenuItem>
-                            <MenuItem value="on_ice">On Ice</MenuItem>
-                        </TextField>
-                        <Typography>Document Count: {selectedOffer.documentsCount}</Typography>
-                        <Typography>Comment Count: {selectedOffer.commentsCount}</Typography>
-                        <Box>
-                            <Typography variant="h6">Documents</Typography>
-                            <input type="file" onChange={handleUploadDocument} />
-                            <ul>
-                                {Array.isArray(documents) && documents.map((doc) => (
-                                    <li key={doc.id}><a href={doc.file_url} target="_blank" rel="noopener noreferrer">{doc.filename}</a></li>
-                                ))}
-                            </ul>
-                        </Box>
-                        <Box>
-                            <Typography variant="h6">Comments</Typography>
-                            <TextField
-                                label="Add Comment"
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                fullWidth
-                                margin='normal'
-                            />
-                            <Button onClick={handleAddComment} variant="contained">Add Comment</Button>
-                            <ul>
-                                {Array.isArray(comments) && comments.map((comment) => (
-                                    <li key={comment.id}>{comment.content} - <i>{comment.author}</i></li>
-                                ))}
-                            </ul>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                            <Button onClick={handleCloseDetailModal} sx={{ mr: 2 }}>
-                                Close
-                            </Button>
-                            <Button variant="contained" onClick={handleSave}>
-                                Save
-                            </Button>
-                        </Box>
+            <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+                <Box sx={{ ...modalStyle }}>
+                    <Typography variant="h6" component="h2">
+                        Edit Offer
+                    </Typography>
+                    <TextField
+                        name="customer_id"
+                        label="Customer ID"
+                        value={selectedOffer?.customer_id || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        name="customer_name"
+                        label="Customer Name"
+                        value={selectedOffer?.customer_name || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        name="title"
+                        label="Title"
+                        value={selectedOffer?.title || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        name="description"
+                        label="Description"
+                        value={selectedOffer?.description || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        name="price"
+                        label="Price"
+                        value={selectedOffer?.price || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        select
+                        label="Currency"
+                        name="currency"
+                        value={selectedOffer?.currency || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin='normal'
+                    >
+                        <MenuItem value="USD">USD</MenuItem>
+                        <MenuItem value="EUR">EUR</MenuItem>
+                        <MenuItem value="GBP">GBP</MenuItem>
+                    </TextField>
+                    <TextField
+                        select
+                        name="status"
+                        label="Status"
+                        value={selectedOffer?.status || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    >
+                        <MenuItem value="draft">Draft</MenuItem>
+                        <MenuItem value="in_progress">In Progress</MenuItem>
+                        <MenuItem value="active">Active</MenuItem>
+                        <MenuItem value="on_ice">On Ice</MenuItem>
+                    </TextField>
+                    <TextField
+                        name="created_by"
+                        label="Created By"
+                        value={selectedOffer?.created_by || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                        <Button onClick={() => setIsEditModalOpen(false)} sx={{ mr: 2 }}>
+                            Cancel
+                        </Button>
+                        <Button variant="contained" onClick={handleSave}>
+                            Save
+                        </Button>
                     </Box>
-                </Modal>
-            )}
+                </Box>
+            </Modal>
         </div>
     );
-};
+}
 
 const modalStyle = {
     position: 'absolute',

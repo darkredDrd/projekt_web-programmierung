@@ -21,17 +21,5 @@ export function checkPermission(role, operation) {
         ]
     };
 
-    if (role === 'Account-Manager') {
-        return permissions[role].includes(operation);
-    }
-
-    if (role === 'Developer' && offerStatus === 'Draft') {
-        return permissions[role].includes(operation);
-    }
-
-    if (role === 'User' || role === 'Developer') {
-        return permissions[role].includes(operation);
-    }
-
-    return false;
+    return permissions[role].includes(operation);
 }

@@ -54,7 +54,7 @@ export function getDocumentById(fastify, id) {
 
 export function getDocumentsByOfferId(fastify, offerId) {
     const statement = fastify.db.prepare(`
-        SELECT id, filename, file_url
+        SELECT id, offer_id, filename, file_url, uploaded_by, uploaded_at, updated_at
         FROM documents
         WHERE offer_id = ?
     `);

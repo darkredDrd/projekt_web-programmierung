@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-// import Grid from '@mui/material/Grid';
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -10,7 +9,6 @@ import { useRole } from "../../../services/RoleContext";
 import { useError } from "../../../services/ErrorContext";
 import { createCustomer, fetchCustomers } from "../../../services/api";
 import CustomerList from "./CustomerList";
-import { useNavigate } from "react-router-dom";
 
 type Customer = {
   id: number;
@@ -22,18 +20,19 @@ type Customer = {
   updated_at: string;
 };
 
-export default function MainGrid() {
+type CustomerGridProps = {
+  customers: Customer[];
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
+};
+
+const CustomerGrid: React.FC<CustomerGridProps> = ({ customers, setCustomers }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newCustomer, setNewCustomer] = useState<
-    Omit<Customer, "id" | "created_at" | "updated_at">
-  >({
+  const [newCustomer, setNewCustomer] = useState<Omit<Customer, "id" | "created_at" | "updated_at">>({
     name: "",
     email: "",
     phone: "",
     address: "",
   });
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const navigate = useNavigate();
   const { role } = useRole();
   const { setError } = useError();
 
@@ -48,7 +47,7 @@ export default function MainGrid() {
     };
 
     getCustomers();
-  }, [role, setError]);
+  }, [role, setError, setCustomers]);
 
   const handleAdd = async () => {
     try {
@@ -67,9 +66,6 @@ export default function MainGrid() {
     const { name, value } = e.target;
     setNewCustomer((prev) => ({ ...prev, [name]: value }));
   };
-
-  
-
 
   return (
     <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" }, p: 2 }}>
@@ -91,10 +87,11 @@ export default function MainGrid() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate('/add-customer')} 
+          onClick={() => setIsAddModalOpen(true)}
           sx={{ ml: "auto" }}
+          disabled={role !== 'Basic Account-Manager'}
         >
-          Add Customer
+          {role === 'Basic Account-Manager' ? 'Add Customer' : 'Current role isn\'t authorized to add customer'}
         </Button>
       </Box>
       <CustomerList customers={customers} setCustomers={setCustomers} />
@@ -147,7 +144,7 @@ export default function MainGrid() {
       </Modal>
     </Box>
   );
-}
+};
 
 const modalStyle = {
   position: "absolute",
@@ -159,3 +156,5 @@ const modalStyle = {
   boxShadow: 24,
   p: 4,
 };
+
+export default CustomerGrid;
