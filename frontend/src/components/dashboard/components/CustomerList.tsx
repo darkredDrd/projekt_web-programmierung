@@ -6,6 +6,8 @@ import { useError } from '../../../services/ErrorContext';
 import { IconButton, Modal, Box, TextField, Button, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
 
 type Customer = {
   id: number;
@@ -27,6 +29,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { role } = useRole();
   const { setError } = useError();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getCustomers = async () => {
@@ -74,6 +77,11 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
     setSelectedCustomer((prev) => (prev ? { ...prev, [name]: value } : null));
   };
 
+  const handleInspect = (customer: Customer) => {
+    // Implementiere die Inspektionslogik hier
+    navigate(`/customer/${customer.id}`);
+  };
+
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', flex: 1 },
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -93,6 +101,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
           </IconButton>
           <IconButton onClick={() => handleDelete(params.row as Customer)}>
             <DeleteIcon />
+          </IconButton>
+          <IconButton onClick={() => handleInspect(params.row as Customer)}>
+          <SearchIcon />
           </IconButton>
         </>
       ),

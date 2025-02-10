@@ -29,6 +29,20 @@ type CustomerSchema = {
   address: string;
 };
 
+export const fetchCustomerById = async (role: string, id: string, setError: (error: string) => void) => {
+  try {
+    const response = await axios.get(`${API_URL}/customers/${id}`, {
+      headers: {
+        Authorization: role,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    setError('Error fetching customer');
+    throw error;
+  }
+};
+
 export const updateCustomer = async (role: string, id: number, data: CustomerSchema, setError: (error: string) => void) => {
   try {
     const response = await axios.put(`${API_URL}/customers/${id}`, data, {
@@ -453,6 +467,20 @@ export const fetchOfferById = async (role: string, id: string, setError: (error:
     } else {
       setError('Error fetching offer: An unknown error occurred');
     }
+    throw error;
+  }
+};
+
+export const fetchOffersByCustomerId = async (role: string, customerId: string, setError: (error: string) => void) => {
+  try {
+    const response = await axios.get(`/api/customers/${customerId}/offers`, {
+      headers: {
+        Authorization: role,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    setError('Error fetching offers');
     throw error;
   }
 };

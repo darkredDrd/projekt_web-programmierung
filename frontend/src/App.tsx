@@ -8,7 +8,8 @@ import NotFoundPage from './components/dashboard/components/PageNotFound';
 import CustomerGrid from './components/dashboard/components/CustomerGrid';
 import OffersGrid from './components/dashboard/components/OffersGrid';
 import OfferDetails from './components/dashboard/components/OfferDetails';
-
+import Customer from './components/dashboard/components/CustomerList';
+import CustomerDetail from './components/dashboard/components/CustomerDetails';
 
 type Customer = {
   id: number;
@@ -34,7 +35,9 @@ function App() {
               <Route path="offers" element={<OffersGrid />} />
               <Route path="offer-details/:id" element={<OfferDetails />} />
               <Route path="*" element={<NotFoundPage />} />
-            </Route>
+              <Route path="/customer" element={<Customer customers={customers} setCustomers={setCustomers} />} />
+              <Route path="/customer/:id" element={<CustomerDetail />} />
+            </Route> 
           </Routes>
         </Router>
       </RoleProvider>
