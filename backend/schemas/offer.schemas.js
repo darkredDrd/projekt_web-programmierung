@@ -54,6 +54,24 @@ const getOfferOptions = {
     },
 };
 
+const getOffersByCustomerIdOptions = {
+    schema: {
+        params: {
+            type: "object",
+            properties: {
+                customerId: { type: "integer" },
+            },
+            required: ["customerId"],
+        },
+        response: {
+            200: {
+                type: "array",
+                items: { $ref: "offerSchema#" },
+            },
+        },
+    },
+};
+
 const createOfferOptions = {
     schema: {
         body: {
@@ -161,6 +179,7 @@ export {
     offerSchema,
     getOffersOptions,
     getOfferOptions,
+    getOffersByCustomerIdOptions,
     createOfferOptions,
     updateOfferOptions,
     deleteOfferOptions,

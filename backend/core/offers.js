@@ -40,6 +40,18 @@ export function getOfferById(fastify, id) {
     }
 }
 
+export function getOffersByCustomerId(fastify, customerId) {
+    const statement = fastify.db.prepare("SELECT * FROM offers WHERE customer_id = ?");
+
+    try {
+        const offers = statement.all(customerId);
+        return offers;
+    } catch (err) {
+        fastify.log.error(err);
+        return null;
+    }
+}
+
 export function createOffer(fastify, offerProps) {
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];

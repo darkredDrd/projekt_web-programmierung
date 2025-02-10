@@ -51,7 +51,7 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
             try {
                 const customersData = await fetchCustomers(role, setError);
                 setCustomers(customersData);
-
+    
                 const offersData = await fetchOffers(role, setError);
                 const updatedOffers = await Promise.all(offersData.map(async (offer: Offers) => {
                     const documentsCount = await fetchDocumentsCount(role, offer.id, setError);
@@ -59,13 +59,17 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
                     const customer = customersData.find((customer: Customer) => customer.id === offer.customer_id);
                     return { ...offer, document_count: documentsCount, comment_count: commentsCount, customer_name: customer ? customer.name : 'Unknown' };
                 }));
+    
+                // Sort the offers by created_at in descending order
+                updatedOffers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
                 setOffers(updatedOffers);
             } catch (error) {
                 console.error('Error fetching data:', error);
                 setError(String(error));
             }
         };
-
+    
         fetchInitialData();
     }, [role, setError, setOffers]);
 

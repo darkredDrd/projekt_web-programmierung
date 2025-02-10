@@ -1,6 +1,7 @@
 import {
     getOffers,
     getOfferById,
+    getOffersByCustomerId,
     createOffer,
     updateOffer,
     deleteOffer,
@@ -9,6 +10,7 @@ import {
 import {
     getOffersOptions,
     getOfferOptions,
+    getOffersByCustomerIdOptions,
     createOfferOptions,
     updateOfferOptions,
     deleteOfferOptions,
@@ -22,6 +24,7 @@ import { checkPermission } from '../authorization.js';
  * With this route the user can:
  * - GET all offers
  * - GET a single offer by ID
+ * - GET all offers by customer ID
  * - POST a new offer
  * - PUT (update) an offer by ID
  * - DELETE an offer by ID
@@ -62,6 +65,24 @@ async function offerRoutes(fastify, options) {
 
         reply.code(200);
         return { offer: offer };
+    });
+
+    fastify.get("/customers/:customerId/offers", getOffersByCustomerIdOptions, async (request, reply) => {
+        if (!checkPermission(request.role, 'getOffersByCustomerId')) {
+            reply.code(403).send({ error: 'Role does not have permission for this operation' });
+            return;
+        }
+
+        const customerId = parseInt(request.params.customerId, 10);
+        const offers = getOffersByCustomerId(fastify, customerId);
+
+        if (!offers) {
+            reply.code(500);
+            return { error: "Could not get offers" };
+        }
+
+        reply.code(200);
+        return offers;
     });
 
     fastify.post("/offers", createOfferOptions, async (request, reply) => {

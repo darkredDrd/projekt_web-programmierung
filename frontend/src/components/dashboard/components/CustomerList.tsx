@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { fetchCustomers, updateCustomer, deleteCustomer } from '../../../services/api';
+import { fetchCustomers, fetchOffersByCustomerId, updateCustomer, deleteCustomer } from '../../../services/api';
 import { useRole } from '../../../services/RoleContext';
 import { useError } from '../../../services/ErrorContext';
 import { IconButton, Modal, Box, TextField, Button, Typography } from '@mui/material';
@@ -15,6 +15,19 @@ type Customer = {
   email: string;
   phone: string;
   address: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type Offer = {
+  id: number;
+  customer_id: number;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  status: string;
+  created_by: string;
   created_at: string;
   updated_at: string;
 };
@@ -35,7 +48,16 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
     const getCustomers = async () => {
       try {
         const data = await fetchCustomers(role, setError);
-        setCustomers(data);
+        const customersWithOffers = await Promise.all(data.map(async (customer: Customer) => {
+          const offers: Offer[] = await fetchOffersByCustomerId(role, customer.id.toString(), setError);
+          const revenue = offers.reduce((sum: number, offer: Offer) => sum + offer.price, 0);
+          return { ...customer, offerCount: offers.length, revenue };
+        }));
+
+        // Sort customers by revenue in descending order
+        customersWithOffers.sort((a, b) => b.revenue - a.revenue);
+
+        setCustomers(customersWithOffers);
       } catch (error) {
         console.error('Error fetching customers:', error);
       }
@@ -78,18 +100,14 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
   };
 
   const handleInspect = (customer: Customer) => {
-    // Implementiere die Inspektionslogik hier
     navigate(`/customer/${customer.id}`);
   };
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', flex: 1 },
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'email', headerName: 'Email', flex: 1 },
-    { field: 'phone', headerName: 'Phone', flex: 1 },
-    { field: 'address', headerName: 'Address', flex: 1 },
-    { field: 'created_at', headerName: 'Created At', flex: 1 },
-    { field: 'updated_at', headerName: 'Updated At', flex: 1 },
+    { field: 'offerCount', headerName: 'Offers', flex: 1 },
+    { field: 'revenue', headerName: 'Revenue', flex: 1 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -103,7 +121,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ customers, setCustomers }) 
             <DeleteIcon />
           </IconButton>
           <IconButton onClick={() => handleInspect(params.row as Customer)}>
-          <SearchIcon />
+            <SearchIcon />
           </IconButton>
         </>
       ),

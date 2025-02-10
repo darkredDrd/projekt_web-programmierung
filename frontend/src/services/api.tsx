@@ -473,7 +473,7 @@ export const fetchOfferById = async (role: string, id: string, setError: (error:
 
 export const fetchOffersByCustomerId = async (role: string, customerId: string, setError: (error: string) => void) => {
   try {
-    const response = await axios.get(`/api/customers/${customerId}/offers`, {
+    const response = await axios.get(`${API_URL}/customers/${customerId}/offers`, {
       headers: {
         Authorization: role,
       },
