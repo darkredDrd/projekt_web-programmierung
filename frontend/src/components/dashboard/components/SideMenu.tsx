@@ -11,10 +11,10 @@ const SideMenu = () => {
     <Drawer
       variant="permanent"
       sx={{
-        width: 240, // Feste Breite für das Side-Menu
+        width: 240, 
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: 240, // Feste Breite für das Side-Menu
+          width: 240, 
           boxSizing: 'border-box',
         },
       }}

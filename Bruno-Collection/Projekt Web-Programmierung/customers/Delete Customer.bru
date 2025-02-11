@@ -4,6 +4,10 @@ meta {
   seq: 5
 }
 
+headers {
+  Authorization: Basic Account-Manager
+}
+
 delete {
   url: http://localhost:8080/api/customers/5
   body: none

@@ -384,9 +384,6 @@ export default function OffersGrid() {
                             <Button onClick={handleCloseDetailModal} sx={{ mr: 2 }}>
                                 Close
                             </Button>
-                            <Button variant="contained" onClick={() => { /* Save functionality here */ }}>
-                                Save
-                            </Button>
                         </Box>
                     </Box>
                 </Modal>

@@ -4,6 +4,10 @@ meta {
   seq: 4
 }
 
+headers {
+  Authorization: Basic Account-Manager
+}
+
 put {
   url: http://localhost:8080/api/customers/1
   body: json

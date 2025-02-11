@@ -4,6 +4,10 @@ meta {
   seq: 5
 }
 
+headers {
+  Authorization: Basic Account-Manager
+}
+
 put {
   url: http://localhost:8080/api/comments/1
   body: none

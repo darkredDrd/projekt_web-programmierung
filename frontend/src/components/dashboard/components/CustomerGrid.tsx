@@ -53,8 +53,7 @@ const CustomerGrid: React.FC<CustomerGridProps> = ({ customers, setCustomers }) 
     try {
       await createCustomer(role, newCustomer, setError);
       setIsAddModalOpen(false);
-      setNewCustomer({ name: "", email: "", phone: "", address: "" }); // Reset new customer fields
-      // Fetch customers again to update the list
+      setNewCustomer({ name: "", email: "", phone: "", address: "" }); 
       const data = await fetchCustomers(role, setError);
       setCustomers(data);
     } catch (error) {

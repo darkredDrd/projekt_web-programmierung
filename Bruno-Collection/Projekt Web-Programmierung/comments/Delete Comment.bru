@@ -4,6 +4,10 @@ meta {
   seq: 6
 }
 
+headers {
+  Authorization: Basic Account-Manager
+}
+
 delete {
   url: http://localhost:8080/api/comments/1
   body: none

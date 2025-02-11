@@ -33,7 +33,7 @@ const DocumentList = forwardRef<{ reloadDocuments: () => void }, DocumentListPro
     const getDocuments = async () => {
         try {
             const data = await fetchDocuments(role, offerId, setError);
-            setDocuments(data.documents); // Ensure we are setting the correct data
+            setDocuments(data.documents); 
         } catch (error) {
             console.error('Error fetching documents:', error);
         }
@@ -70,9 +70,9 @@ const DocumentList = forwardRef<{ reloadDocuments: () => void }, DocumentListPro
                 }
                 await updateDocument(role, offerId, selectedDocument.id, updateData, setError);
                 const updatedDocuments = await fetchDocuments(role, offerId, setError);
-                setDocuments(updatedDocuments.documents); // Ensure we are setting the correct data
+                setDocuments(updatedDocuments.documents); 
                 setIsEditModalOpen(false);
-                setFile(null); // Reset file input
+                setFile(null); 
             } catch (error) {
                 console.error('Error updating document:', error);
             }

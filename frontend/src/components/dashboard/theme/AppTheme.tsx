@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { ColorModeContext } from '../theme/ColorModeContext';
+import { ColorModeContext } from './ColorModeContext';
 
 import { ReactNode } from 'react';
 

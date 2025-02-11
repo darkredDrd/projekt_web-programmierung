@@ -78,7 +78,7 @@ const CustomerDetail: React.FC = () => {
       if (id) {
         try {
           const response = await fetchOffersByCustomerId(role, id, setError);
-          setOffers(response); // Extrahiere die Angebote aus dem API-Response und setze einen Standardwert
+          setOffers(response); 
         } catch (error) {
           console.error("Error fetching offers:", error);
         }
@@ -112,7 +112,7 @@ const CustomerDetail: React.FC = () => {
     if (customer) {
       try {
         await deleteCustomer(role, customer.id, setError);
-        navigate("/customers"); // Navigate back to the customers list after deletion
+        navigate("/customers"); 
       } catch (error) {
         console.error("Error deleting customer:", error);
       }

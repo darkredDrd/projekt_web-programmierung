@@ -36,7 +36,6 @@ export function getCustomerById(fastify, id) {
 }
 
 export function createCustomer(fastify, customerProps) {
-    // Validate the input to ensure required properties are provided
     if (!customerProps.name || !customerProps.email || !customerProps.phone || !customerProps.address) {
         throw new Error('Missing required customer properties.');
     }
@@ -64,18 +63,15 @@ export function createCustomer(fastify, customerProps) {
         const { name, email, phone, address, created_at, updated_at } = customerToCreate;
         const info = insertIntostatement.run(name, email, phone, address, created_at, updated_at);
 
-        // Check if the insertion was successful
         if (!info.lastInsertRowid) {
             throw new Error('Failed to insert customer.');
         }
 
-        // Retrieve the created customer by its ID
         const createdCustomer = selectStatement.get(info.lastInsertRowid);
         return createdCustomer;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }
 
@@ -84,7 +80,7 @@ export function updateCustomer(fastify, id, customerProps) {
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
-    // Build the dynamic SQL query based on provided properties
+    // Dynamically build the SQL Query based on the provided properties
     const fields = [];
     const values = [];
 
@@ -105,11 +101,9 @@ export function updateCustomer(fastify, id, customerProps) {
         values.push(customerProps.address);
     }
 
-    // updated_at is always updated
     fields.push("updated_at = ?");
     values.push(sqliteTimestamp);
 
-    // Add the customer ID to the values array
     values.push(id);
 
     const updateStatement = fastify.db.prepare(`
@@ -126,13 +120,11 @@ export function updateCustomer(fastify, id, customerProps) {
             throw new Error(`Customer with ID ${id} not found`);
         }
 
-        // Retrieve the updated customer by its ID
         const updatedCustomer = selectStatement.get(id);
         return updatedCustomer;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }
 
@@ -141,10 +133,8 @@ export function deleteCustomer(fastify, id) {
     const selectStatement = fastify.db.prepare("SELECT * FROM customers WHERE id = ?");
 
     try {
-        // Retrieve the customer before deleting it
         const customerToDelete = selectStatement.get(id);
 
-        // Delete the customer
         const info = deleteStatement.run(id);
 
         if (info.changes === 0) {
@@ -153,8 +143,7 @@ export function deleteCustomer(fastify, id) {
 
         return customerToDelete;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }

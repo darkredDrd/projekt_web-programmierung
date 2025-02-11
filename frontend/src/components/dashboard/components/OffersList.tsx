@@ -83,7 +83,6 @@ const OffersList: React.FC<OffersListProps> = ({ offers, setOffers }) => {
                 await updateOffer(role, selectedOffer.id, selectedOffer, setError);
                 setIsEditModalOpen(false);
                 setSelectedOffer(null);
-                // Fetch offers again to update the list
                 const offersData = await fetchOffers(role, setError);
                 const updatedOffers = await Promise.all(offersData.map(async (offer: Offers) => {
                     const documentsCount = await fetchDocumentsCount(role, offer.id, setError);

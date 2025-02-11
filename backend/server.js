@@ -24,7 +24,6 @@ fastify.addSchema(legacyOfferSchema);
 fastify.addSchema(offerSchema);
 fastify.addSchema(testGenerateSchema);
 
-// Register the multipart plugin
 fastify.register(multipart);
 
 // CORS integration to improve security for Frontend
@@ -39,14 +38,7 @@ fastify.register(cors, {
     }
 });
 
-// // Add a hook to set the default Authorization header if not present
-// fastify.addHook('onRequest', async (request, reply) => {
-//     if (!request.headers['authorization']) {
-//         request.headers['authorization'] = 'Basic User';
-//     }
-// });
-
-// Add a preHandler hook to log handle authorization
+// Add a preHandler hook to handle authorization
 fastify.addHook('preHandler', async (request, reply) => {
     const authHeader = request.headers['authorization'];
     if (!authHeader) {

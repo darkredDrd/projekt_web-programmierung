@@ -34,7 +34,7 @@ const CommentList = forwardRef<{ reloadComments: () => void }, CommentListProps>
     const getComments = async () => {
         try {
             const data = await fetchComments(role, offerId, setError);
-            setComments(data.comments); // Adjust to match the response structure
+            setComments(data.comments); 
         } catch (error) {
             console.error('Error fetching comments:', error);
         }

@@ -4,6 +4,10 @@ meta {
   seq: 4
 }
 
+headers {
+  Authorization: Basic Account-Manager
+}
+
 get {
   url: http://localhost:8080/api/documents/content/1
   body: none

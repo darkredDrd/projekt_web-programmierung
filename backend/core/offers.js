@@ -68,7 +68,7 @@ export function createOffer(fastify, offerProps) {
         description: offerProps.description,
         price: offerProps.price,
         currency: offerProps.currency,
-        status: 'draft', // Status immer auf "draft" setzen
+        status: 'draft', 
         created_by: offerProps.created_by,
         created_at: sqliteTimestamp,
         updated_at: sqliteTimestamp
@@ -78,25 +78,24 @@ export function createOffer(fastify, offerProps) {
         const { customer_id, title, description, price, currency, status, created_by, created_at, updated_at } = offerToCreate;
         const info = insertIntostatement.run(customer_id, title, description, price, currency, status, created_by, created_at, updated_at);
 
-        // Check if the insertion was successful
         if (!info.lastInsertRowid) {
             throw new Error('Failed to insert offer.');
         }
 
-        // Retrieve the created offer by its ID
         const createdOffer = selectStatement.get(info.lastInsertRowid);
         return createdOffer;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }
 
 export function updateOffer(fastify, offerId, offerProps) {
+    // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
+    // Dynamically build the SQL Query based on the provided properties
     const fields = [];
     const values = [];
 
@@ -139,7 +138,6 @@ export function updateOffer(fastify, offerId, offerProps) {
     try {
         const info = updateStatement.run(...values);
 
-        // Check if the update was successful
         if (info.changes === 0) {
             throw new Error('Failed to update offer or no changes made.');
         }
@@ -152,6 +150,7 @@ export function updateOffer(fastify, offerId, offerProps) {
 }
 
 export function updateOfferStatus(fastify, offerId, newStatus) {
+    // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
@@ -165,7 +164,6 @@ export function updateOfferStatus(fastify, offerId, newStatus) {
     try {
         const info = updateStatement.run(newStatus, sqliteTimestamp, offerId);
 
-        // Check if the update was successful
         if (info.changes === 0) {
             throw new Error('Failed to update offer status or no changes made.');
         }
@@ -182,10 +180,8 @@ export function deleteOffer(fastify, id) {
     const selectStatement = fastify.db.prepare("SELECT * FROM offers WHERE id = ?");
 
     try {
-        // Retrieve the offer before deleting it
         const offerToDelete = selectStatement.get(id);
 
-        // Delete the offer
         const info = deleteStatement.run(id);
 
         if (info.changes === 0) {
@@ -194,8 +190,7 @@ export function deleteOffer(fastify, id) {
 
         return offerToDelete;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }

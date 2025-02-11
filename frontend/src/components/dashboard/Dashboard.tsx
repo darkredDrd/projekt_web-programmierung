@@ -5,23 +5,11 @@ import SideMenu from './components/SideMenu';
 import AppTheme from './theme/AppTheme';
 import Header from './components/Header';
 import { Outlet } from 'react-router-dom';
-import {
-  chartsCustomizations,
-  dataGridCustomizations,
-  datePickersCustomizations,
-  treeViewCustomizations,
-} from './theme/customizations';
 
-const xThemeComponents = {
-  ...chartsCustomizations,
-  ...dataGridCustomizations,
-  ...datePickersCustomizations,
-  ...treeViewCustomizations,
-};
 
-export default function Dashboard(props: { disableCustomTheme?: boolean }) {
+export default function Dashboard() {
   return (
-    <AppTheme {...props} themeComponents={xThemeComponents}>
+    <AppTheme>
       <CssBaseline enableColorScheme />
       <Box sx={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
         <Header />

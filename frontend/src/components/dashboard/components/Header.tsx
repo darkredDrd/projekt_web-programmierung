@@ -2,7 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { ColorModeContext } from '..//theme/ColorModeContext';
+import { ColorModeContext } from '../theme/ColorModeContext';
 
 const Header = () => {
   const theme = useTheme();

@@ -54,10 +54,8 @@ const createTableStatements = `
     );
 `;
 
-// Initialize the database
 const db = new Database(filePath);
 
-// Execute the create table statement
 db.exec(createTableStatements);
 
 export default fp(async (fastify, opts) => {

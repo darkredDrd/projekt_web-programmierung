@@ -62,12 +62,10 @@ async function getOfferStatus(fastify, offerId) {
 }
 
 export async function createComment(fastify, commentProps) {
-    // Validate the input to ensure required properties are provided
     if (!commentProps.offer_id || !commentProps.author || !commentProps.content) {
         throw new Error('Missing required comment properties.');
     }
 
-    // Check the status of the offer
     const offerStatus = await getOfferStatus(fastify, commentProps.offer_id);
     if (offerStatus === 'Draft') {
         throw new Error('Cannot add comments to an offer in Draft status.');
@@ -95,7 +93,6 @@ export async function createComment(fastify, commentProps) {
         const { offer_id, author, content, created_at, updated_at } = commentToCreate;
         const info = insertIntostatement.run(offer_id, author, content, created_at, updated_at);
 
-        // Check if the insertion was successful
         if (!info.lastInsertRowid) {
             throw new Error('Failed to insert comment.');
         }
@@ -112,7 +109,7 @@ export function updateComment(fastify, id, commentProps) {
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
-    // Build the dynamic SQL query based on provided properties
+    // Dynamically build the SQL Query based on the provided properties
     const fields = [];
     const values = [];
 
@@ -129,11 +126,9 @@ export function updateComment(fastify, id, commentProps) {
         values.push(commentProps.content);
     }
 
-    // updated_at is always updated
     fields.push("updated_at = ?");
     values.push(sqliteTimestamp);
 
-    // Add the comment ID to the values array
     values.push(id);
 
     const updateStatement = fastify.db.prepare(`
@@ -150,13 +145,11 @@ export function updateComment(fastify, id, commentProps) {
             throw new Error(`Comment with ID ${id} not found`);
         }
 
-        // Retrieve the updated comment by its ID
         const updatedComment = selectStatement.get(id);
         return updatedComment;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }
 
@@ -165,10 +158,8 @@ export function deleteComment(fastify, id) {
     const selectStatement = fastify.db.prepare("SELECT * FROM comments WHERE id = ?");
 
     try {
-        // Retrieve the comment before deleting it
         const commentToDelete = selectStatement.get(id);
 
-        // Delete the comment
         const info = deleteStatement.run(id);
 
         if (info.changes === 0) {
@@ -177,8 +168,7 @@ export function deleteComment(fastify, id) {
 
         return commentToDelete;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }

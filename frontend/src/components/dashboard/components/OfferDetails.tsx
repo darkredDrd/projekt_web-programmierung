@@ -76,7 +76,7 @@ const OfferDetails: React.FC = () => {
       if (id) {
         try {
           const response = await fetchOfferById(role, id, setError);
-          const data = response.offer; // Adjust to match the response structure
+          const data = response.offer; 
           setOffer(data);
           if (data.customer_id) {
             const customersData = await fetchCustomers(role, setError);

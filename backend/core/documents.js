@@ -72,12 +72,10 @@ export async function createDocument(fastify, documentProps, file) {
     const { offer_id, uploaded_by } = documentProps;
     const filename = file.filename;
 
-    // Validate the input to ensure required properties are provided
     if (!offer_id || !uploaded_by || !file) {
         throw new Error('Missing required document properties.');
     }
 
-    // Ensure the file is a .txt file
     if (path.extname(filename) !== '.txt') {
         throw new Error('Only .txt files are supported.');
     }
@@ -90,7 +88,7 @@ export async function createDocument(fastify, documentProps, file) {
     const fileId = uuidv4();
     const filePath = path.join(assetsDir, `${fileId}.txt`);
 
-    // Save the file to the filesystem
+    // Create the assets-folder if it doesn't exist and save the file to the filesystem
     await fs.mkdir(assetsDir, { recursive: true });
     await fs.writeFile(filePath, await file.toBuffer());
 
@@ -113,7 +111,6 @@ export async function createDocument(fastify, documentProps, file) {
         const { offer_id, filename, file_url, uploaded_by, uploaded_at, updated_at } = documentToCreate;
         const info = insertIntostatement.run(offer_id, filename, file_url, uploaded_by, uploaded_at, updated_at);
 
-        // Check if the insertion was successful
         if (!info.lastInsertRowid) {
             throw new Error('Failed to insert document.');
         }
@@ -128,15 +125,11 @@ export async function createDocument(fastify, documentProps, file) {
 export async function updateDocument(fastify, documentId, documentProps, file) {
     const { uploaded_by } = documentProps;
 
-    // Validate the input to ensure required properties are provided
-    if (!documentId || (!file && !uploaded_by)) {
-        throw new Error('Missing required document properties.');
-    }
-
     // Create the timestamp in the format YYYY-MM-DD HH:MM:SS to avoid problems with SQLite
     const now = new Date();
     const sqliteTimestamp = now.toISOString().replace('T', ' ').split('.')[0];
 
+    // Dynamically build the SQL Query based on the provided properties
     const fields = [];
     const values = [];
 
@@ -148,7 +141,6 @@ export async function updateDocument(fastify, documentId, documentProps, file) {
     if (file) {
         const filename = file.filename;
 
-        // Ensure the file is a .txt file
         if (path.extname(filename) !== '.txt') {
             throw new Error('Only .txt files are supported.');
         }
@@ -157,7 +149,7 @@ export async function updateDocument(fastify, documentId, documentProps, file) {
         const fileId = uuidv4();
         const filePath = path.join(assetsDir, `${fileId}.txt`);
 
-        // Save the file to the filesystem
+        // Create the assets-folder & save the file to the filesystem
         await fs.mkdir(assetsDir, { recursive: true });
         await fs.writeFile(filePath, await file.toBuffer());
 
@@ -182,7 +174,6 @@ export async function updateDocument(fastify, documentId, documentProps, file) {
     try {
         const info = updateStatement.run(...values);
 
-        // Check if the update was successful
         if (info.changes === 0) {
             throw new Error('Failed to update document or no changes made.');
         }
@@ -199,10 +190,8 @@ export function deleteDocument(fastify, id) {
     const selectStatement = fastify.db.prepare("SELECT * FROM documents WHERE id = ?");
 
     try {
-        // Retrieve the document before deleting it
         const documentToDelete = selectStatement.get(id);
 
-        // Delete the document
         const info = deleteStatement.run(id);
 
         if (info.changes === 0) {
@@ -211,8 +200,7 @@ export function deleteDocument(fastify, id) {
 
         return documentToDelete;
     } catch (err) {
-        // Log the error for debugging
         fastify.log.error(err);
-        throw err; // Rethrow the error for the caller to handle
+        throw err; 
     }
 }

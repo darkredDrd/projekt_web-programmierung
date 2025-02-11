@@ -29,13 +29,12 @@ function App() {
       <RoleProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<Dashboard />}>
-              <Route index element={<OffersGrid />} />
+            <Route path="/" element={<Dashboard />}> 
+              <Route index element={<OffersGrid />} /> /* These routes determine the Main-Content of the Dashboard */
               <Route path="customers" element={<CustomerGrid customers={customers} setCustomers={setCustomers} />} />
               <Route path="offers" element={<OffersGrid />} />
               <Route path="offer-details/:id" element={<OfferDetails />} />
               <Route path="*" element={<NotFoundPage />} />
-              <Route path="/customer" element={<Customer customers={customers} setCustomers={setCustomers} />} />
               <Route path="/customer/:id" element={<CustomerDetail />} />
             </Route> 
           </Routes>
