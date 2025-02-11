@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Stack, CssBaseline, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import AppNavbar from './components/AppNavbar';
 import SideMenu from './components/SideMenu';
 import AppTheme from './theme/AppTheme';
 import Header from './components/Header';
@@ -29,7 +28,6 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
         <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'space-between' }}>
           <SideMenu />
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <AppNavbar />
             {/* Main content */}
             <Box
               component="main"
